@@ -1,7 +1,8 @@
 import SplitHeading from '../components/SplitHeading.jsx';
 import { useInView } from '../hooks/useInView.js';
+import ForegroundPlate from '../components/ForegroundPlate.jsx';
 
-export default function Boot({ sectionRef }) {
+export default function Boot({ sectionRef, active, foregroundHost }) {
   const { ref: viewRef, inView } = useInView();
   const setRefs = (el) => {
     sectionRef.current = el;
@@ -10,6 +11,9 @@ export default function Boot({ sectionRef }) {
 
   return (
     <section id="boot" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
+      <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
+        <img className="fg-cutout" src="/foreground/fg-boot-shard.webp" alt="" aria-hidden="true" />
+      </ForegroundPlate>
       <div className="hero">
         <div className="eyebrow"><div className="dot" />Chapter 01 — Boot</div>
         <SplitHeading text="Adish Shah" as="h1" className="name" />

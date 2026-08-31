@@ -11,8 +11,11 @@ import { useEffect, useState } from 'react';
 // GPT-generated plates arrive.
 
 const CROSSFADE_MS = 900;
+// Clamp how far within-chapter scroll can push a background layer — long
+// chapters shouldn't drag the far/mid/near planes off past a subtle drift.
+const MAX_PARALLAX_PX = 140;
 
-export default function PlateBackdrop({ plates, activeIndex }) {
+export default function PlateBackdrop({ plates, activeIndex, sceneOffset = 0 }) {
   const [current, setCurrent] = useState(activeIndex);
   const [prev, setPrev] = useState(null);
 
@@ -29,18 +32,30 @@ export default function PlateBackdrop({ plates, activeIndex }) {
 
   return (
     <div className="plate-backdrop" aria-hidden="true">
-      {prevPlate && <PlateImage key={`prev-${prev}`} plate={prevPlate} state="out" />}
-      {currentPlate && <PlateImage key={`cur-${current}`} plate={currentPlate} state="in" />}
+      {prevPlate && <PlateImage key={`prev-${prev}`} plate={prevPlate} state="out" sceneOffset={0} />}
+      {currentPlate && <PlateImage key={`cur-${current}`} plate={currentPlate} state="in" sceneOffset={sceneOffset} />}
     </div>
   );
 }
 
-function PlateImage({ plate, state }) {
-  const { src, anchor = 'right', scale = 1 } = plate;
+function PlateImage({ plate, state, sceneOffset }) {
+  const { src, anchor = 'right', scale = 1, layers } = plate;
   const cls = `plate plate--${anchor} plate--${state}`;
   return (
     <div className={cls}>
-      <img src={src} alt="" style={{ transform: `scale(${scale})` }} />
+      {layers && layers.map((layer, i) => {
+        const drift = Math.max(-MAX_PARALLAX_PX, Math.min(MAX_PARALLAX_PX, sceneOffset * layer.speed));
+        return (
+          <div
+            className="bg-layer"
+            key={layer.src}
+            style={{ zIndex: i, opacity: layer.opacity ?? 1, transform: `translateY(${drift}px)` }}
+          >
+            <img src={layer.src} alt="" />
+          </div>
+        );
+      })}
+      {src && <img className="plate-img" src={src} style={{ '--s': scale }} alt="" />}
     </div>
   );
 }

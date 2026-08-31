@@ -8,7 +8,16 @@ import PlateBackdrop from './components/PlateBackdrop.jsx';
 // the rest of the GPT-generated plates arrive; a null slot leaves the base
 // ink background visible for that chapter.
 const PLATES = [
-  { src: '/plates/plate-01-boot.webp', anchor: 'right', scale: 1.04 }, // Boot
+  {
+    src: '/plates/plate-01-boot.webp',
+    anchor: 'right',
+    scale: 1.04,
+    layers: [
+      { src: '/bg/boot-far.webp', speed: 0.03, opacity: 0.55 },
+      { src: '/bg/boot-mid.webp', speed: 0.06, opacity: 0.75 },
+      { src: '/bg/boot-near.webp', speed: 0.1, opacity: 0.9 }
+    ]
+  }, // Boot
   null, // Stack — pending
   null, // Runtime — pending
   null, // Modules — pending
@@ -29,12 +38,12 @@ export default function App() {
   const deployRef = useRef(null);
   const sectionRefs = useMemo(() => [bootRef, stackRef, runtimeRef, modulesRef, deployRef], []);
 
-  const { activeIndex } = useScrollAnchors(sectionRefs, CHAPTER_IDS);
+  const { activeIndex, sceneOffset } = useScrollAnchors(sectionRefs, CHAPTER_IDS);
   const { hostRef, host } = useForegroundHost();
 
   return (
     <div>
-      <PlateBackdrop plates={PLATES} activeIndex={activeIndex} />
+      <PlateBackdrop plates={PLATES} activeIndex={activeIndex} sceneOffset={sceneOffset} />
       <div id="grain" aria-hidden="true" />
       <div id="vignette" aria-hidden="true" />
       <ForegroundHost hostRef={hostRef} />
@@ -43,7 +52,7 @@ export default function App() {
       <Nav chapterIds={CHAPTER_IDS} activeIndex={activeIndex} />
 
       <main>
-        <Boot sectionRef={bootRef} />
+        <Boot sectionRef={bootRef} active={activeIndex === 0} foregroundHost={host} />
         <Stack sectionRef={stackRef} />
         <Runtime sectionRef={runtimeRef} />
         <Modules sectionRef={modulesRef} active={activeIndex === 3} foregroundHost={host} />

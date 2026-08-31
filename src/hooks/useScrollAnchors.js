@@ -4,6 +4,10 @@ import { measureAnchors, exactProgressFromScroll } from '../lib/scrollProgress.j
 export function useScrollAnchors(sectionRefs, chapterIds) {
   const anchorsRef = useRef([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Pixel distance between current scrollY and the active chapter's anchor —
+  // drives within-chapter background parallax (0 at the chapter's resting
+  // center, grows as the user scrolls away from it).
+  const [sceneOffset, setSceneOffset] = useState(0);
   const widthAtMeasureRef = useRef(window.innerWidth);
 
   useEffect(() => {
@@ -19,6 +23,8 @@ export function useScrollAnchors(sectionRefs, chapterIds) {
       const exact = exactProgressFromScroll(anchorsRef.current, scrollY);
       const idx = Math.max(0, Math.min(chapterIds.length - 1, Math.round(exact)));
       setActiveIndex((prev) => (prev === idx ? prev : idx));
+      const anchor = anchorsRef.current[idx];
+      setSceneOffset(typeof anchor === 'number' ? scrollY - anchor : 0);
     }
 
     function onResize() {
@@ -49,5 +55,5 @@ export function useScrollAnchors(sectionRefs, chapterIds) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { anchorsRef, activeIndex };
+  return { anchorsRef, activeIndex, sceneOffset };
 }
