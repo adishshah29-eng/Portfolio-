@@ -292,11 +292,25 @@
   <h4>ADISH SHAH</h4>
 </footer>
 
-<script src="assets/vendor/three.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./assets/vendor/three/three.module.js",
+    "three/addons/": "./assets/vendor/three/jsm/"
+  }
+}
+</script>
 <script src="assets/vendor/scroll-conductor.js"></script>
-<script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
 (function(){
-  "use strict";
 
   /* ---------- word split + reveal ---------- */
   document.querySelectorAll('[data-split]').forEach(function(el){
@@ -346,7 +360,7 @@
 
   /* ---------- Three.js world ---------- */
   var canvas = document.getElementById('world');
-  var THREE_OK = !!(window.THREE && window.createScrollConductor);
+  var CONDUCTOR_OK = !!window.createScrollConductor;
   var renderer;
 
   function tryCreateRenderer(){
@@ -356,7 +370,7 @@
     } catch (e) { return null; }
   }
 
-  if (THREE_OK) renderer = tryCreateRenderer();
+  if (CONDUCTOR_OK) renderer = tryCreateRenderer();
 
   if (!renderer) {
     document.documentElement.classList.add('no-webgl');
@@ -372,7 +386,7 @@
     if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
     else renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 0.92;
     renderer.setClearColor(ink, 1);
 
     var camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 220);
@@ -434,13 +448,34 @@
       return tex;
     }
 
+    function makeRoughnessTexture(){
+      var size = 512;
+      var c = document.createElement('canvas'); c.width = c.height = size;
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = '#8a8a8a'; ctx.fillRect(0, 0, size, size);
+      for (var i = 0; i < 900; i++){
+        var v = 110 + Math.floor(Math.random() * 90);
+        ctx.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')';
+        var r = 4 + Math.random() * 26;
+        ctx.beginPath(); ctx.arc(Math.random() * size, Math.random() * size, r, 0, Math.PI * 2); ctx.fill();
+      }
+      return new THREE.CanvasTexture(c);
+    }
+
     var glowTex = makeGlowTexture();
+
+    /* --- environment map (PMREM) for real PBR reflections, no external HDR --- */
+    var pmrem = new THREE.PMREMGenerator(renderer);
+    var envRT = pmrem.fromScene(new RoomEnvironment(), 0.045);
+    scene.environment = envRT.texture;
+    pmrem.dispose();
 
     /* --- ground --- */
     var groundGeo = new THREE.PlaneGeometry(160, 160, 1, 1);
     var groundMat = new THREE.MeshStandardMaterial({
-      color: 0x090c10, roughness: 0.92, metalness: 0.08,
-      emissive: 0xffffff, emissiveMap: makeGroundTexture(), emissiveIntensity: 0.85
+      color: 0x090b0f, roughness: 0.88, roughnessMap: makeRoughnessTexture(), metalness: 0.06,
+      emissive: 0xffffff, emissiveMap: makeGroundTexture(), emissiveIntensity: 0.55,
+      envMapIntensity: 0.1
     });
     var ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
@@ -450,30 +485,35 @@
     /* --- towers ("server stacks") --- */
     var accentColors = [0xe0231c, 0xc9a24a, 0xff5a3c];
     var towerGroup = new THREE.Group();
-    var towerMat = new THREE.MeshStandardMaterial({ color: 0x0c1014, roughness: 0.85, metalness: 0.2 });
+    var towerMat = new THREE.MeshStandardMaterial({
+      color: 0x151b21, roughness: 0.55, metalness: 0.28, envMapIntensity: 0.2
+    });
     function placeTowers(count, rMin, rMax, zBias){
       for (var i = 0; i < count; i++){
         var w = 0.8 + Math.random() * 1.6;
         var d = 0.8 + Math.random() * 1.6;
         var h = 1.6 + Math.random() * 7.5;
-        var geo = new THREE.BoxGeometry(w, h, d);
+        var bevel = Math.min(w, d, h) * 0.06;
+        var geo = new RoundedBoxGeometry(w, h, d, 2, bevel);
         var mesh = new THREE.Mesh(geo, towerMat);
         var ang = Math.random() * Math.PI * 2;
         var rad = rMin + Math.random() * (rMax - rMin);
         mesh.position.set(Math.cos(ang) * rad, h / 2, Math.sin(ang) * rad * 0.6 - zBias);
         mesh.rotation.y = Math.random() * 0.2 - 0.1;
         towerGroup.add(mesh);
-        var edges = new THREE.EdgesGeometry(geo);
         var col = accentColors[Math.floor(Math.random() * accentColors.length)];
-        var lineMat = new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.35 });
-        var line = new THREE.LineSegments(edges, lineMat);
-        mesh.add(line);
-        if (Math.random() < 0.4){
-          var slitGeo = new THREE.PlaneGeometry(w * 0.7, 0.05);
-          var slitMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.8 });
+        var bandCount = 1 + Math.floor(Math.random() * 2);
+        for (var b = 0; b < bandCount; b++){
+          var slitGeo = new THREE.PlaneGeometry(w * 0.7, 0.045);
+          var slitMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9 });
           var slit = new THREE.Mesh(slitGeo, slitMat);
-          slit.position.set(0, h * 0.32, d / 2 + 0.01);
+          var by = h * (0.2 + b * 0.28) - h / 2;
+          slit.position.set(0, by, d / 2 + 0.01);
           mesh.add(slit);
+          var slitBack = slit.clone();
+          slitBack.position.z = -d / 2 - 0.01;
+          slitBack.rotation.y = Math.PI;
+          mesh.add(slitBack);
         }
       }
     }
@@ -534,13 +574,20 @@
     var moduleMeshes = [];
     modulePositions.forEach(function(p, i){
       var col = accentColors[i % accentColors.length];
-      var core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), new THREE.MeshStandardMaterial({ color: 0x0c0f13, emissive: col, emissiveIntensity: 1.1, roughness: 0.4, metalness: 0.3 }));
+      var core = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.55, 2),
+        new THREE.MeshPhysicalMaterial({
+          color: 0x0c0f13, emissive: col, emissiveIntensity: 1.3,
+          roughness: 0.22, metalness: 0.45, clearcoat: 0.7, clearcoatRoughness: 0.18,
+          envMapIntensity: 0.7
+        })
+      );
       core.position.set(p[0], p[1], p[2]);
-      var ring = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.02, 8, 40), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.5 }));
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.02, 8, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.65 }));
       ring.rotation.x = Math.PI / 2.3;
       core.add(ring);
-      var glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending }));
-      glow.scale.set(5, 5, 1);
+      var glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }));
+      glow.scale.set(4, 4, 1);
       core.add(glow);
       moduleGroup.add(core);
       moduleMeshes.push({ mesh: core, ring: ring });
@@ -567,19 +614,19 @@
     scene.add(particles);
 
     /* --- lights --- */
-    var hemi = new THREE.HemisphereLight(0x33414c, 0x05070a, 0.55);
+    var hemi = new THREE.HemisphereLight(0x252d35, 0x05070a, 0.28);
     scene.add(hemi);
-    var key = new THREE.DirectionalLight(0x9fb3c8, 0.45);
+    var key = new THREE.DirectionalLight(0x9fb3c8, 0.3);
     key.position.set(-14, 22, 10);
     scene.add(key);
 
     /* --- chapters (camera + world state ledger) --- */
     var chapters = [
-      { id: 'boot', camera: { p: [0, 5.2, 16], t: [0, 3.0, -20], fov: 36, mobile: { p: [0, 6.4, 22], t: [0, 4.0, -20], fov: 46 } }, world: { fog: 0.020, key: 0.5, signal: 0.55, grade: 0x8fa4c9 } },
-      { id: 'stack', camera: { p: [-6.0, 2.4, 6.0], t: [1.5, 3.2, -12], fov: 42, mobile: { p: [-5.0, 3.4, 10], t: [1.0, 3.6, -12], fov: 50 } }, world: { fog: 0.026, key: 0.42, signal: 0.4, grade: 0x8b96a0 } },
-      { id: 'runtime', camera: { p: [4.0, 1.6, -8], t: [-2.0, 2.0, -34], fov: 40, mobile: { p: [3.0, 2.6, -6], t: [-1.0, 2.6, -34], fov: 48 } }, world: { fog: 0.030, key: 0.4, signal: 0.35, grade: 0x9a8b7c } },
-      { id: 'modules', camera: { p: [-3.0, 3.0, -26], t: [3.0, 2.6, -38], fov: 38, mobile: { p: [-2.0, 3.8, -24], t: [2.5, 3.2, -38], fov: 46 } }, world: { fog: 0.024, key: 0.46, signal: 0.55, grade: 0xb98a5c } },
-      { id: 'deploy', camera: { p: [0, 10.0, -30], t: [0, 16.0, -66], fov: 40, mobile: { p: [0, 11.5, -26], t: [0, 17, -66], fov: 48 } }, world: { fog: 0.018, key: 0.55, signal: 1.0, grade: 0xe0a15c } }
+      { id: 'boot', camera: { p: [0, 5.2, 16], t: [0, 3.0, -20], fov: 36, mobile: { p: [0, 6.4, 22], t: [0, 4.0, -20], fov: 46 } }, world: { fog: 0.026, key: 0.3, signal: 0.55, grade: 0x8fa4c9 } },
+      { id: 'stack', camera: { p: [-6.0, 2.4, 6.0], t: [1.5, 3.2, -12], fov: 42, mobile: { p: [-5.0, 3.4, 10], t: [1.0, 3.6, -12], fov: 50 } }, world: { fog: 0.032, key: 0.24, signal: 0.4, grade: 0x8b96a0 } },
+      { id: 'runtime', camera: { p: [4.0, 1.6, -8], t: [-2.0, 2.0, -34], fov: 40, mobile: { p: [3.0, 2.6, -6], t: [-1.0, 2.6, -34], fov: 48 } }, world: { fog: 0.036, key: 0.22, signal: 0.35, grade: 0x9a8b7c } },
+      { id: 'modules', camera: { p: [-3.0, 3.0, -26], t: [3.0, 2.6, -38], fov: 38, mobile: { p: [-2.0, 3.8, -24], t: [2.5, 3.2, -38], fov: 46 } }, world: { fog: 0.030, key: 0.26, signal: 0.55, grade: 0xb98a5c } },
+      { id: 'deploy', camera: { p: [0, 10.0, -30], t: [0, 16.0, -66], fov: 40, mobile: { p: [0, 11.5, -26], t: [0, 17, -66], fov: 48 } }, world: { fog: 0.022, key: 0.34, signal: 1.0, grade: 0xe0a15c } }
     ];
 
     function isMobile(){ return window.innerWidth < 760; }
@@ -650,14 +697,27 @@
       signalLight.intensity = w.signal * 0.6;
     }
 
+    /* ---------- postprocessing (real bloom, not a CSS fake) ---------- */
+    var composer = new EffectComposer(renderer);
+    var renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    var bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight), 0.62, 0.42, 0.32
+    );
+    composer.addPass(bloomPass);
+    composer.addPass(new OutputPass());
+
     /* ---------- resize ---------- */
     var widthAtMeasure = window.innerWidth;
     function resize(){
       var w = window.innerWidth, h = window.innerHeight;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+      renderer.setPixelRatio(dpr);
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      composer.setPixelRatio(dpr);
+      composer.setSize(w, h);
     }
     resize();
 
@@ -727,7 +787,7 @@
         signal.material.rotation = t * 0.02;
       }
 
-      renderer.render(scene, camera);
+      composer.render();
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
