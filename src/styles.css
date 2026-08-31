@@ -16,13 +16,10 @@ a{color:var(--bone);}
 h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
 ::selection{background:var(--vermilion);color:var(--bone);}
 
-.world-host{position:fixed;inset:0;z-index:0;}
-.world-host canvas{display:block;width:100%;height:100%;}
 #grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.5;
   background:repeating-linear-gradient(0deg,rgba(223,231,224,.012) 0 1px,transparent 1px 3px);}
 #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
   background:radial-gradient(120% 90% at 50% 40%, transparent 40%, rgba(3,4,6,.55) 100%);}
-.no-webgl{background:var(--ink-2);}
 
 /* nav */
 .nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:20;
@@ -152,9 +149,6 @@ footer h4{margin:0;font-size:10px;font-weight:500;letter-spacing:.22em;text-tran
   background:repeating-linear-gradient(135deg,rgba(223,231,224,.02) 0 10px,transparent 10px 20px);}
 .shot-card__label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
 .shot-card__title{margin-top:6px;font-size:13px;letter-spacing:.02em;color:var(--accent,var(--bone));}
-
-#fallback-note{position:fixed;left:var(--pad);bottom:16px;z-index:30;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-  background:rgba(5,7,10,.8);border:1px solid var(--line);padding:8px 12px;}
 
 a:focus-visible, button:focus-visible{outline:1px solid var(--vermilion);outline-offset:3px;}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
