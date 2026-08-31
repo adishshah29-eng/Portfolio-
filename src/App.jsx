@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import InterfaceWorld from './world/InterfaceWorld.jsx';
 import { CHAPTER_IDS } from './world/chapters.js';
 import { useScrollAnchors } from './hooks/useScrollAnchors.js';
+import ForegroundHost, { useForegroundHost } from './components/ForegroundHost.jsx';
 import Nav from './content/Nav.jsx';
 import Boot from './content/Boot.jsx';
 import Stack from './content/Stack.jsx';
@@ -27,6 +28,7 @@ export default function App() {
   const sectionRefs = useMemo(() => [bootRef, stackRef, runtimeRef, modulesRef, deployRef], []);
 
   const { anchorsRef, activeIndex } = useScrollAnchors(sectionRefs, CHAPTER_IDS);
+  const { hostRef, host } = useForegroundHost();
 
   const [webglOk, setWebglOk] = useState(true);
   const [contextLost, setContextLost] = useState(false);
@@ -50,6 +52,7 @@ export default function App() {
       )}
       <div id="grain" aria-hidden="true" />
       <div id="vignette" aria-hidden="true" />
+      <ForegroundHost hostRef={hostRef} />
       {!showWorld && <div id="fallback-note">3D world unavailable — showing story only</div>}
 
       <a className="sr-only" href="#boot">Skip to content</a>
@@ -59,7 +62,7 @@ export default function App() {
         <Boot sectionRef={bootRef} />
         <Stack sectionRef={stackRef} />
         <Runtime sectionRef={runtimeRef} />
-        <Modules sectionRef={modulesRef} />
+        <Modules sectionRef={modulesRef} active={activeIndex === 3} foregroundHost={host} />
         <Deploy sectionRef={deployRef} />
       </main>
 

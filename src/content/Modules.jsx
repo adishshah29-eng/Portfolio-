@@ -1,5 +1,7 @@
 import SplitHeading from '../components/SplitHeading.jsx';
 import { useInView } from '../hooks/useInView.js';
+import ForegroundPlate from '../components/ForegroundPlate.jsx';
+import ScreenshotPlaceholder from '../components/ScreenshotPlaceholder.jsx';
 
 const PROJECTS = [
   {
@@ -32,7 +34,7 @@ const PROJECTS = [
   }
 ];
 
-export default function Modules({ sectionRef }) {
+export default function Modules({ sectionRef, active, foregroundHost }) {
   const { ref: viewRef, inView } = useInView();
   const setRefs = (el) => {
     sectionRef.current = el;
@@ -41,6 +43,9 @@ export default function Modules({ sectionRef }) {
 
   return (
     <section id="modules" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
+      <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
+        <ScreenshotPlaceholder title="VisuallyLearn" accent="#e0231c" />
+      </ForegroundPlate>
       <div>
         <div className="eyebrow"><div className="dot" />Chapter 04 — Modules</div>
         <SplitHeading text="Modules" as="h1" className="title" />

@@ -43,49 +43,34 @@ const MODULE_POSITIONS = [
   [6.5, 3.8, -39]
 ];
 
+// Abstract glowing marker — the literal "browser window" motif now lives in
+// the 2D foreground plate; this stays a restrained waypoint, not a duplicate.
 function WindowPanel({ position, accent, index }) {
   const glowTex = useMemo(() => makeGlowTexture(), []);
   const ringRef = useRef();
-  const w = 2.1;
-  const h = 1.5;
-  const d = 0.1;
-  const headerH = 0.26;
+  const w = 1.5;
+  const h = 1.05;
+  const d = 0.08;
 
   useFrame((state) => {
-    if (ringRef.current) ringRef.current.rotation.z = state.clock.elapsedTime * 0.15 + index;
+    if (ringRef.current) ringRef.current.rotation.z = state.clock.elapsedTime * 0.12 + index;
   });
 
   return (
     <group position={position}>
-      <sprite scale={[4.2, 4.2, 1]} position={[0, 0, -0.2]}>
-        <spriteMaterial map={glowTex} color={accent} transparent opacity={0.32} depthWrite={false} blending={THREE.AdditiveBlending} />
+      <sprite scale={[3.4, 3.4, 1]} position={[0, 0, -0.2]}>
+        <spriteMaterial map={glowTex} color={accent} transparent opacity={0.26} depthWrite={false} blending={THREE.AdditiveBlending} />
       </sprite>
       <mesh ref={ringRef}>
-        <torusGeometry args={[1.35, 0.015, 8, 48]} />
-        <meshBasicMaterial color={accent} transparent opacity={0.55} />
+        <torusGeometry args={[1.0, 0.012, 8, 48]} />
+        <meshBasicMaterial color={accent} transparent opacity={0.45} />
       </mesh>
-      <RoundedBox args={[w, h, d]} radius={0.06} smoothness={3}>
+      <RoundedBox args={[w, h, d]} radius={0.05} smoothness={3}>
         <meshPhysicalMaterial
-          color="#0c0f13" roughness={0.22} metalness={0.35}
-          clearcoat={0.6} clearcoatRoughness={0.2} envMapIntensity={0.6}
+          color="#0c0f13" emissive={accent} emissiveIntensity={0.18} roughness={0.22} metalness={0.35}
+          clearcoat={0.6} clearcoatRoughness={0.2} envMapIntensity={0.5}
         />
       </RoundedBox>
-      <mesh position={[0, h / 2 - headerH / 2, d / 2 + 0.005]}>
-        <planeGeometry args={[w * 0.96, headerH]} />
-        <meshBasicMaterial color="#0a0d11" />
-      </mesh>
-      {[0, 1, 2].map((dotI) => (
-        <mesh key={dotI} position={[-w / 2 + 0.18 + dotI * 0.15, h / 2 - headerH / 2, d / 2 + 0.01]}>
-          <circleGeometry args={[0.035, 16]} />
-          <meshBasicMaterial color={dotI === 0 ? '#e0231c' : dotI === 1 ? '#c9a24a' : '#ff5a3c'} />
-        </mesh>
-      ))}
-      {[0, 1].map((lineI) => (
-        <mesh key={lineI} position={[-w * 0.05, h / 2 - headerH - 0.26 - lineI * 0.28, d / 2 + 0.005]}>
-          <planeGeometry args={[w * (0.55 - lineI * 0.15), 0.05]} />
-          <meshBasicMaterial color={accent} transparent opacity={0.6} />
-        </mesh>
-      ))}
     </group>
   );
 }

@@ -47,9 +47,9 @@ function Card({ w, h, d, x, y, z, ry, accent, lines }) {
 export function FloatingCards() {
   const cards = useMemo(
     () => [
-      ...seededCards(20, 6, 20, 4, 0),
-      ...seededCards(18, 14, 34, -18, 20),
-      ...seededCards(14, 10, 30, -34, 40)
+      ...seededCards(9, 6, 20, 4, 0),
+      ...seededCards(8, 14, 34, -18, 20),
+      ...seededCards(6, 10, 30, -34, 40)
     ],
     []
   );
@@ -90,7 +90,7 @@ function Chip({ x, z, accent }) {
 }
 
 export function ButtonChips() {
-  const chips = useMemo(() => seededChips(24, 4, 30, -6), []);
+  const chips = useMemo(() => seededChips(10, 4, 30, -6), []);
   return (
     <group>
       {chips.map((c) => (

@@ -134,6 +134,25 @@ h1.fin{text-transform:uppercase;font-weight:500;font-size:clamp(48px,9vw,120px);
 footer{position:relative;z-index:5;padding:32px var(--pad) 40px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 footer h4{margin:0;font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);}
 
+/* foreground ownership — near-plane scenery re-parented per active chapter */
+.foreground-host{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden;}
+.fg-plate{position:absolute;opacity:0;filter:blur(10px);transition:opacity .82s var(--ease-out),transform .82s var(--ease-out),filter .82s var(--ease-out);}
+.fg-plate--bottom-right{right:clamp(20px,4vw,72px);bottom:clamp(20px,4vw,64px);transform:translate(40px,24px);}
+.fg-plate--bottom-left{left:clamp(20px,4vw,72px);bottom:clamp(20px,4vw,64px);transform:translate(-40px,24px);}
+.fg-plate--bottom-center{left:50%;bottom:clamp(20px,4vw,56px);transform:translate(-50%,24px);}
+.fg-plate.is-active{opacity:1;filter:blur(0);transform:translate(0,0);}
+.fg-plate.is-retiring{opacity:0;filter:blur(14px);}
+@media (prefers-reduced-motion:reduce){ .fg-plate{transition:opacity .2s linear;filter:none!important;transform:none!important;} }
+@media (max-width:720px){ .foreground-host{display:none;} }
+
+.shot-card{width:min(280px,42vw);border:1px dashed var(--line);background:rgba(5,7,10,.78);}
+.shot-card__bar{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);}
+.shot-card__bar span{width:7px;height:7px;border-radius:50%;background:var(--line);}
+.shot-card__body{padding:20px 16px 22px;aspect-ratio:16/10;display:flex;flex-direction:column;justify-content:flex-end;
+  background:repeating-linear-gradient(135deg,rgba(223,231,224,.02) 0 10px,transparent 10px 20px);}
+.shot-card__label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.shot-card__title{margin-top:6px;font-size:13px;letter-spacing:.02em;color:var(--accent,var(--bone));}
+
 #fallback-note{position:fixed;left:var(--pad);bottom:16px;z-index:30;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
   background:rgba(5,7,10,.8);border:1px solid var(--line);padding:8px 12px;}
 
