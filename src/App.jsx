@@ -2,6 +2,18 @@ import { useMemo, useRef } from 'react';
 import { CHAPTER_IDS } from './content/chapterIds.js';
 import { useScrollAnchors } from './hooks/useScrollAnchors.js';
 import ForegroundHost, { useForegroundHost } from './components/ForegroundHost.jsx';
+import PlateBackdrop from './components/PlateBackdrop.jsx';
+
+// Per-chapter scene plates (Kage-style persistent backdrops). Add entries as
+// the rest of the GPT-generated plates arrive; a null slot leaves the base
+// ink background visible for that chapter.
+const PLATES = [
+  { src: '/plates/plate-01-boot.webp', anchor: 'right', scale: 1.04 }, // Boot
+  null, // Stack — pending
+  null, // Runtime — pending
+  null, // Modules — pending
+  null  // Deploy — pending
+];
 import Nav from './content/Nav.jsx';
 import Boot from './content/Boot.jsx';
 import Stack from './content/Stack.jsx';
@@ -22,6 +34,7 @@ export default function App() {
 
   return (
     <div>
+      <PlateBackdrop plates={PLATES} activeIndex={activeIndex} />
       <div id="grain" aria-hidden="true" />
       <div id="vignette" aria-hidden="true" />
       <ForegroundHost hostRef={hostRef} />

@@ -16,6 +16,28 @@ a{color:var(--bone);}
 h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
 ::selection{background:var(--vermilion);color:var(--bone);}
 
+/* Kage-style persistent scene-plate backdrop — one image per chapter,
+   cross-fades over ~900ms as the active chapter changes. Sits behind
+   #grain/#vignette and behind the DOM content. Right/left/center anchors
+   let each plate's composition be positioned so its focal subject
+   doesn't collide with that chapter's copy layout. */
+.plate-backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.plate{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease-out),filter .9s var(--ease-out);filter:blur(0);}
+.plate img{position:absolute;top:50%;transform-origin:center;height:100%;width:auto;max-width:none;
+  filter:contrast(1.05) saturate(1.05);}
+.plate--right img{right:0;transform:translateY(-50%);}
+.plate--left  img{left:0;transform:translateY(-50%);}
+.plate--center img{left:50%;transform:translate(-50%,-50%);}
+.plate--in{opacity:1;}
+.plate--out{opacity:0;filter:blur(14px);}
+/* fade to ink at the top-left so the DOM copy never sits on top of loud pixels */
+.plate::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,var(--ink) 0%,rgba(5,7,10,.85) 32%,rgba(5,7,10,.35) 55%,transparent 78%);}
+@media (max-width:720px){
+  .plate img{height:auto;width:180%;left:50%!important;top:auto;bottom:0;transform:translateX(-50%)!important;}
+  .plate::after{background:linear-gradient(180deg,var(--ink) 0%,rgba(5,7,10,.85) 30%,rgba(5,7,10,.45) 60%,transparent 90%);}
+}
+
 #grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.5;
   background:repeating-linear-gradient(0deg,rgba(223,231,224,.012) 0 1px,transparent 1px 3px);}
 #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
@@ -142,13 +164,13 @@ footer h4{margin:0;font-size:10px;font-weight:500;letter-spacing:.22em;text-tran
 @media (prefers-reduced-motion:reduce){ .fg-plate{transition:opacity .2s linear;filter:none!important;transform:none!important;} }
 @media (max-width:720px){ .foreground-host{display:none;} }
 
-.shot-card{width:min(280px,42vw);border:1px dashed var(--line);background:rgba(5,7,10,.78);}
-.shot-card__bar{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);}
-.shot-card__bar span{width:7px;height:7px;border-radius:50%;background:var(--line);}
-.shot-card__body{padding:20px 16px 22px;aspect-ratio:16/10;display:flex;flex-direction:column;justify-content:flex-end;
-  background:repeating-linear-gradient(135deg,rgba(223,231,224,.02) 0 10px,transparent 10px 20px);}
-.shot-card__label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
-.shot-card__title{margin-top:6px;font-size:13px;letter-spacing:.02em;color:var(--accent,var(--bone));}
+/* Alpha-less cutout composited over the site ink via blend mode: the
+   image's near-black background falls through, leaving the chrome and
+   warm halo. Keeps us honest with GPT Image's non-transparent output
+   without a manual bg-removal step per plate. */
+.fg-cutout{display:block;height:clamp(320px,52vh,620px);width:auto;
+  mix-blend-mode:lighten;filter:contrast(1.06) saturate(1.05);}
+@media (prefers-reduced-motion:reduce){ .fg-cutout{transition:none;} }
 
 a:focus-visible, button:focus-visible{outline:1px solid var(--vermilion);outline-offset:3px;}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}

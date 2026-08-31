@@ -1,7 +1,6 @@
 import SplitHeading from '../components/SplitHeading.jsx';
 import { useInView } from '../hooks/useInView.js';
 import ForegroundPlate from '../components/ForegroundPlate.jsx';
-import ScreenshotPlaceholder from '../components/ScreenshotPlaceholder.jsx';
 
 const PROJECTS = [
   {
@@ -44,7 +43,7 @@ export default function Modules({ sectionRef, active, foregroundHost }) {
   return (
     <section id="modules" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
       <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
-        <ScreenshotPlaceholder title="VisuallyLearn" accent="#e0231c" />
+        <img className="fg-cutout" src="/foreground/fg-chrome-a.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>
       <div>
         <div className="eyebrow"><div className="dot" />Chapter 04 — Modules</div>
