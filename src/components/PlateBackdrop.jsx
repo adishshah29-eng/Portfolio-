@@ -45,13 +45,23 @@ function PlateImage({ plate, state, sceneOffset }) {
     <div className={cls}>
       {layers && layers.map((layer, i) => {
         const drift = Math.max(-MAX_PARALLAX_PX, Math.min(MAX_PARALLAX_PX, sceneOffset * layer.speed));
+        const zoom = layer.scale ?? 1;
+        // Depth-of-field cue: layers further back read softer and smaller,
+        // near layers stay sharp and slightly larger — sells the parallax
+        // as actual distance, not just three flat images sliding at
+        // different speeds.
+        const filter = `saturate(1.08)${layer.blur ? ` blur(${layer.blur}px)` : ''}`;
         return (
           <div
             className="bg-layer"
             key={layer.src}
-            style={{ zIndex: i, opacity: layer.opacity ?? 1, transform: `translateY(${drift}px)` }}
+            style={{
+              zIndex: i,
+              opacity: layer.opacity ?? 1,
+              transform: `translateY(${drift}px) scale(${zoom})`
+            }}
           >
-            <img src={layer.src} alt="" />
+            <img src={layer.src} style={{ filter }} alt="" />
           </div>
         );
       })}

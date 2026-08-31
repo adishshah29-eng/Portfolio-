@@ -13,9 +13,9 @@ const PLATES = [
     anchor: 'right',
     scale: 1.04,
     layers: [
-      { src: '/bg/boot-far.webp', speed: 0.03, opacity: 0.55 },
-      { src: '/bg/boot-mid.webp', speed: 0.06, opacity: 0.75 },
-      { src: '/bg/boot-near.webp', speed: 0.1, opacity: 0.9 }
+      { src: '/bg/boot-far.webp', speed: 0.03, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/boot-mid.webp', speed: 0.06, opacity: 0.8, scale: 1.04 },
+      { src: '/bg/boot-near.webp', speed: 0.11, opacity: 0.95, scale: 1.12 }
     ]
   }, // Boot
   null, // Stack — pending

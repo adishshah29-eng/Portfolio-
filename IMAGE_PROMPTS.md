@@ -15,24 +15,24 @@ Filenames below are the convention to save as — keep them so wiring them into 
 
 ---
 
-## Chapter 01 — BOOT (hero)
+## Chapter 01 — BOOT (hero) — REVISED (round 2)
 
-**Concept**: the "ADISH" chrome monument rising out of the dark — this is the site's cold-open, so it carries the most weight.
+**Concept change**: the plate no longer spells any name — it's now a pure abstract composition of chrome fragments assembling/exploding. The DOM already has "Adish Shah" as the real h1, so the image doesn't need to repeat it; this also fixes the redundancy of seeing the name twice. The far background layer is unchanged (it read fine); mid and near are rewritten because the first pass came back as near-duplicate skies with no real silhouette/foreground content, so the parallax stack had nothing to separate — regenerate these two. The foreground cutout is rewritten to visually belong to the plate (a fragment breaking off it) instead of a random floating teardrop.
 
-### bg-boot-far.webp (sky/atmosphere plane)
-> [style bible] + Empty near-black void with a very faint vermilion-to-transparent gradient glow low on the horizon, drifting soft haze bands, a scatter of tiny out-of-focus light specks like distant embers, completely empty of any solid object — pure atmosphere plate, horizontal 21:9 composition, extremely soft and low-contrast so it can sit furthest back.
+### bg-boot-far.webp — KEEP, no regen needed
+Already shipped and working; leave as-is.
 
-### bg-boot-mid.webp (ridge/structure plane)
-> [style bible] + Silhouetted jagged skyline of abstract molten-chrome monoliths and broken geometric shards on the horizon, backlit by a warm vermilion glow so only rim edges catch light, everything else near-black silhouette, horizontal 21:9 composition, no readable text.
+### bg-boot-mid.webp (ridge/structure plane) — REGENERATE
+> [style bible] + A wide silhouetted skyline made of tall jagged broken monolith shapes and shard-like spires of varying heights, evenly spread across the full width of frame, completely backlit so only a thin vermilion rim line traces each shape's silhouette against the near-black sky, everything inside each silhouette pure flat black with no visible surface detail, horizontal 21:9 composition, no readable text, the shapes must be clearly readable as distinct solid silhouettes (not a soft glow gradient like the far layer).
 
-### bg-boot-near.webp (fog/particle plane)
-> [style bible] + Thin drifting layers of ground fog and floating metallic dust particles catching warm rim light, mostly transparent/empty space so it reads as atmosphere in front of the subject, horizontal 21:9 composition, bottom third slightly denser fog fading to nothing at the top.
+### bg-boot-near.webp (fog/particle plane) — REGENERATE
+> [style bible] + Dense drifting fog volumes and a scatter of glowing metallic dust motes photographed close to camera, individual embers and sparks clearly visible as bright pinpoints with soft bloom, fog rolling low across the bottom third of frame, top two-thirds mostly clear/empty, horizontal 21:9 composition, shot with shallow depth of field so a few near motes are large and slightly out of focus — this layer should feel physically close to the camera, not another distant sky.
 
-### plate-01-boot.webp (hero scene plate)
-> [style bible] + The word "ADISH" rendered as monumental liquid chrome typography, letters dripping and melting like mercury, each letter catching hard vermilion and gold rim light against the near-black void, camera angled slightly low looking up at the letterforms, composition anchored to the right two-thirds of frame with the left third left dark/empty for text overlay, hyper-detailed metal reflections, cinematic wide shot.
+### plate-01-boot.webp (hero scene plate) — REGENERATE, new concept
+> [style bible] + A dense cluster of dozens of irregular liquid-chrome shards and fragments caught mid-air as if exploding outward from, or coalescing into, a central point — no readable text, no symbol, no letterforms anywhere in the frame, fragments of wildly varying size tumbling and overlapping in space, strong vermilion and gold rim light catching every fragment edge, dense fragment cluster anchored to the right two-thirds of frame with the left third left dark/empty for text overlay, sense of violent motion and energy, hyper-detailed metal reflections, cinematic wide shot.
 
-### fg-boot-shard.webp (foreground cutout)
-> [style bible] + A single large fragment of broken liquid chrome, teardrop/shard shaped, floating close to camera, extreme close-up, dramatic rim lighting on the curved metal edge, background pure near-black so it isolates cleanly, vertical portrait composition, generous empty margin around the shard for cropping.
+### fg-boot-shard.webp (foreground cutout) — REGENERATE, tied to the plate
+> [style bible] + A single large liquid-chrome shard captured mid-flight as if it just broke away from a larger fractured mass off-frame, trailing two or three smaller droplet fragments behind it like a comet tail, clear sense of directional motion (flying up and to the left), dramatic rim lighting on the curved metal edge, background pure near-black so it isolates cleanly, vertical portrait composition, generous empty margin around the shard for cropping.
 
 ---
 
