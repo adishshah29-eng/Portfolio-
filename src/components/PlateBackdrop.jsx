@@ -20,10 +20,21 @@ gsap.registerPlugin(ScrollTrigger);
 // slowly zooms (`scale` → `zoomTo`) across the full time that chapter is
 // on screen — not the old fixed-multiplier drift, which moved a few px
 // over an entire chapter and read as static.
+//
+// On top of that, mouse position drives a second, independent motion: each
+// layer pans horizontally with the cursor (`parallaxX`, far layers less
+// than near ones — same depth logic as the scroll travel, just driven by
+// the pointer instead), while the plate itself drifts a little the
+// opposite way, so the environment reacts around a subject that feels
+// anchored — a diorama-tilt effect. This rides on the `x` transform
+// component, which GSAP composes independently of the scroll scrub's `y`/
+// `scale`, so the two never fight over the same value.
 
 const CROSSFADE_MS = 900;
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hasFinePointer = () =>
+  typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches;
 
 export default function PlateBackdrop({ plates, activeIndex, chapterIds }) {
   const [current, setCurrent] = useState(activeIndex);
@@ -59,13 +70,15 @@ export default function PlateBackdrop({ plates, activeIndex, chapterIds }) {
 }
 
 function PlateImage({ plate, state, chapterId, isActive }) {
-  const { src, anchor = 'right', scale = 1, zoomTo, layers } = plate;
+  const { src, anchor = 'right', scale = 1, zoomTo, parallaxX: plateParallaxX = 0, layers } = plate;
   const rootRef = useRef(null);
   const plateImgRef = useRef(null);
   const layerEls = useRef([]);
   layerEls.current = [];
 
   useLayoutEffect(() => {
+    let removePointer = () => {};
+
     const ctx = gsap.context(() => {
       const xPercent = anchor === 'center' ? -50 : 0;
       if (plateImgRef.current) {
@@ -88,9 +101,33 @@ function PlateImage({ plate, state, chapterId, isActive }) {
         if (!el || !layer.travel) return;
         gsap.fromTo(el, { y: -layer.travel / 2 }, { y: layer.travel / 2, ease: 'none', scrollTrigger });
       });
+
+      if (!hasFinePointer()) return;
+
+      const panners = [];
+      if (plateImgRef.current && plateParallaxX) {
+        panners.push({ strength: plateParallaxX, setX: gsap.quickTo(plateImgRef.current, 'x', { duration: 0.7, ease: 'power3.out' }) });
+      }
+      layers?.forEach((layer, i) => {
+        const el = layerEls.current[i];
+        if (el && layer.parallaxX) {
+          panners.push({ strength: layer.parallaxX, setX: gsap.quickTo(el, 'x', { duration: 0.7, ease: 'power3.out' }) });
+        }
+      });
+      if (!panners.length) return;
+
+      const onMove = (e) => {
+        const nx = (e.clientX / window.innerWidth - 0.5) * 2; // -1..1
+        panners.forEach(({ strength, setX }) => setX(nx * strength));
+      };
+      window.addEventListener('mousemove', onMove, { passive: true });
+      removePointer = () => window.removeEventListener('mousemove', onMove);
     }, rootRef);
 
-    return () => ctx.revert();
+    return () => {
+      removePointer();
+      ctx.revert();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
