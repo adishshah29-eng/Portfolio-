@@ -22,14 +22,16 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
    let each plate's composition be positioned so its focal subject
    doesn't collide with that chapter's copy layout. */
 .plate-backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
-.plate{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease-out),filter .9s var(--ease-out);filter:blur(0);}
+/* Opacity/filter here are GSAP-owned (see PlateBackdrop.jsx) — no CSS
+   transition, since GSAP already eases every frame it sets; a CSS
+   transition on the same properties would re-ease GSAP's already-eased
+   values and lag behind them. opacity:0 is just the pre-JS default. */
+.plate{position:absolute;inset:0;opacity:0;filter:blur(0);}
 .plate .plate-img{position:absolute;top:50%;z-index:3;transform-origin:center;height:100%;width:auto;max-width:none;
   will-change:transform;filter:contrast(1.05) saturate(1.05);}
 .plate--right .plate-img{right:-24px;}
 .plate--left  .plate-img{left:-24px;}
 .plate--center .plate-img{left:50%;}
-.plate--in{opacity:1;}
-.plate--out{opacity:0;filter:blur(14px);}
 /* fade to ink at the top-left so the DOM copy never sits on top of loud pixels */
 .plate::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;
   background:linear-gradient(105deg,var(--ink) 0%,rgba(5,7,10,.85) 32%,rgba(5,7,10,.35) 55%,transparent 78%);}
@@ -45,7 +47,7 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
    plus a mouse-driven diorama tilt. Full-bleed cover, no anchor logic (these
    are atmosphere, not a composed subject). The -150px horizontal inset is
    overscan room for the cursor pan so it never reveals an edge. */
-.bg-layer{position:absolute;inset:-220px -150px;transition:opacity .9s var(--ease-out);will-change:transform;}
+.bg-layer{position:absolute;inset:-220px -150px;will-change:transform;}
 .bg-layer img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;}
 .bg-layer:first-child img{mix-blend-mode:normal;}
 

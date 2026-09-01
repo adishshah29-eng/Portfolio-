@@ -89,6 +89,26 @@ function PlateImage({ plate, state, chapterId, isActive }) {
         if (el) gsap.set(el, { scale: layer.scale ?? 1 });
       });
 
+      // Crossfade: GSAP-driven rather than the old CSS-transition class
+      // swap. Each plate is a fresh component mount with a new `key` on
+      // chapter change, so it's present in the DOM at its target opacity
+      // from the very first render — a CSS transition has no prior
+      // painted state to animate from and just pops. gsap.fromTo sets an
+      // explicit `from` value itself, so it always actually animates.
+      if (rootRef.current) {
+        if (prefersReducedMotion()) {
+          gsap.set(rootRef.current, { opacity: state === 'out' ? 0 : 1 });
+        } else if (state === 'out') {
+          gsap.fromTo(
+            rootRef.current,
+            { opacity: 1, filter: 'blur(0px)' },
+            { opacity: 0, filter: 'blur(14px)', duration: CROSSFADE_MS / 1000, ease: 'power2.out' }
+          );
+        } else {
+          gsap.fromTo(rootRef.current, { opacity: 0 }, { opacity: 1, duration: CROSSFADE_MS / 1000, ease: 'power2.out' });
+        }
+      }
+
       if (!isActive || !chapterId || prefersReducedMotion()) return;
 
       const scrollTrigger = { trigger: `#${chapterId}`, start: 'top bottom', end: 'bottom top', scrub: 0.6 };
