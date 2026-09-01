@@ -1,4 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Kage's persistent scene-plate layer: a fixed full-viewport backdrop
 // that swaps its image per active chapter with a slow cross-fade. Each
@@ -9,13 +13,19 @@ import { useEffect, useState } from 'react';
 // entries render as null (chapter has no plate yet, leaving the base
 // #ink background visible), which is how we can ship progressively as
 // GPT-generated plates arrive.
+//
+// Motion is GSAP ScrollTrigger-driven, scrubbed against the chapter's own
+// section element: background layers drift a real, visible distance
+// (per-layer `travel`, far layers less than near ones) and the plate
+// slowly zooms (`scale` → `zoomTo`) across the full time that chapter is
+// on screen — not the old fixed-multiplier drift, which moved a few px
+// over an entire chapter and read as static.
 
 const CROSSFADE_MS = 900;
-// Clamp how far within-chapter scroll can push a background layer — long
-// chapters shouldn't drag the far/mid/near planes off past a subtle drift.
-const MAX_PARALLAX_PX = 140;
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export default function PlateBackdrop({ plates, activeIndex, sceneOffset = 0 }) {
+export default function PlateBackdrop({ plates, activeIndex, chapterIds }) {
   const [current, setCurrent] = useState(activeIndex);
   const [prev, setPrev] = useState(null);
 
@@ -32,40 +42,76 @@ export default function PlateBackdrop({ plates, activeIndex, sceneOffset = 0 }) 
 
   return (
     <div className="plate-backdrop" aria-hidden="true">
-      {prevPlate && <PlateImage key={`prev-${prev}`} plate={prevPlate} state="out" sceneOffset={0} />}
-      {currentPlate && <PlateImage key={`cur-${current}`} plate={currentPlate} state="in" sceneOffset={sceneOffset} />}
+      {prevPlate && (
+        <PlateImage key={`prev-${prev}`} plate={prevPlate} state="out" chapterId={chapterIds[prev]} isActive={false} />
+      )}
+      {currentPlate && (
+        <PlateImage
+          key={`cur-${current}`}
+          plate={currentPlate}
+          state="in"
+          chapterId={chapterIds[current]}
+          isActive
+        />
+      )}
     </div>
   );
 }
 
-function PlateImage({ plate, state, sceneOffset }) {
-  const { src, anchor = 'right', scale = 1, layers } = plate;
+function PlateImage({ plate, state, chapterId, isActive }) {
+  const { src, anchor = 'right', scale = 1, zoomTo, layers } = plate;
+  const rootRef = useRef(null);
+  const plateImgRef = useRef(null);
+  const layerEls = useRef([]);
+  layerEls.current = [];
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      const xPercent = anchor === 'center' ? -50 : 0;
+      if (plateImgRef.current) {
+        gsap.set(plateImgRef.current, { yPercent: -50, xPercent, scale });
+      }
+      layers?.forEach((layer, i) => {
+        const el = layerEls.current[i];
+        if (el) gsap.set(el, { scale: layer.scale ?? 1 });
+      });
+
+      if (!isActive || !chapterId || prefersReducedMotion()) return;
+
+      const scrollTrigger = { trigger: `#${chapterId}`, start: 'top bottom', end: 'bottom top', scrub: 0.6 };
+
+      if (plateImgRef.current && zoomTo) {
+        gsap.fromTo(plateImgRef.current, { scale }, { scale: zoomTo, ease: 'none', scrollTrigger });
+      }
+      layers?.forEach((layer, i) => {
+        const el = layerEls.current[i];
+        if (!el || !layer.travel) return;
+        gsap.fromTo(el, { y: -layer.travel / 2 }, { y: layer.travel / 2, ease: 'none', scrollTrigger });
+      });
+    }, rootRef);
+
+    return () => ctx.revert();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const cls = `plate plate--${anchor} plate--${state}`;
   return (
-    <div className={cls}>
-      {layers && layers.map((layer, i) => {
-        const drift = Math.max(-MAX_PARALLAX_PX, Math.min(MAX_PARALLAX_PX, sceneOffset * layer.speed));
-        const zoom = layer.scale ?? 1;
-        // Depth-of-field cue: layers further back read softer and smaller,
-        // near layers stay sharp and slightly larger — sells the parallax
-        // as actual distance, not just three flat images sliding at
-        // different speeds.
-        const filter = `saturate(1.08)${layer.blur ? ` blur(${layer.blur}px)` : ''}`;
-        return (
-          <div
-            className="bg-layer"
-            key={layer.src}
-            style={{
-              zIndex: i,
-              opacity: layer.opacity ?? 1,
-              transform: `translateY(${drift}px) scale(${zoom})`
-            }}
-          >
-            <img src={layer.src} style={{ filter }} alt="" />
-          </div>
-        );
-      })}
-      {src && <img className="plate-img" src={src} style={{ '--s': scale }} alt="" />}
+    <div className={cls} ref={rootRef}>
+      {layers &&
+        layers.map((layer, i) => {
+          const filter = `saturate(1.08)${layer.blur ? ` blur(${layer.blur}px)` : ''}`;
+          return (
+            <div
+              className="bg-layer"
+              key={layer.src}
+              ref={(el) => (layerEls.current[i] = el)}
+              style={{ zIndex: i, opacity: layer.opacity ?? 1 }}
+            >
+              <img src={layer.src} style={{ filter }} alt="" />
+            </div>
+          );
+        })}
+      {src && <img className="plate-img" ref={plateImgRef} src={src} alt="" />}
     </div>
   );
 }

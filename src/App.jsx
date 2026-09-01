@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { CHAPTER_IDS } from './content/chapterIds.js';
 import { useScrollAnchors } from './hooks/useScrollAnchors.js';
+import { useLenis } from './hooks/useLenis.js';
 import ForegroundHost, { useForegroundHost } from './components/ForegroundHost.jsx';
 import PlateBackdrop from './components/PlateBackdrop.jsx';
 
@@ -12,10 +13,11 @@ const PLATES = [
     src: '/plates/plate-01-boot.webp',
     anchor: 'right',
     scale: 1.04,
+    zoomTo: 1.1,
     layers: [
-      { src: '/bg/boot-far.webp', speed: 0.03, opacity: 0.5, scale: 1.0, blur: 3 },
-      { src: '/bg/boot-mid.webp', speed: 0.06, opacity: 0.8, scale: 1.04 },
-      { src: '/bg/boot-near.webp', speed: 0.11, opacity: 0.95, scale: 1.12 }
+      { src: '/bg/boot-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/boot-mid.webp', travel: 140, opacity: 0.8, scale: 1.04 },
+      { src: '/bg/boot-near.webp', travel: 260, opacity: 0.95, scale: 1.12 }
     ]
   }, // Boot
   null, // Stack — pending
@@ -38,12 +40,13 @@ export default function App() {
   const deployRef = useRef(null);
   const sectionRefs = useMemo(() => [bootRef, stackRef, runtimeRef, modulesRef, deployRef], []);
 
-  const { activeIndex, sceneOffset } = useScrollAnchors(sectionRefs, CHAPTER_IDS);
+  const { activeIndex } = useScrollAnchors(sectionRefs, CHAPTER_IDS);
   const { hostRef, host } = useForegroundHost();
+  useLenis();
 
   return (
     <div>
-      <PlateBackdrop plates={PLATES} activeIndex={activeIndex} sceneOffset={sceneOffset} />
+      <PlateBackdrop plates={PLATES} activeIndex={activeIndex} chapterIds={CHAPTER_IDS} />
       <div id="grain" aria-hidden="true" />
       <div id="vignette" aria-hidden="true" />
       <ForegroundHost hostRef={hostRef} />

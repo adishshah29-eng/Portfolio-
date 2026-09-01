@@ -24,10 +24,10 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
 .plate-backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
 .plate{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease-out),filter .9s var(--ease-out);filter:blur(0);}
 .plate .plate-img{position:absolute;top:50%;z-index:3;transform-origin:center;height:100%;width:auto;max-width:none;
-  filter:contrast(1.05) saturate(1.05);}
-.plate--right .plate-img{right:0;transform:translateY(-50%) scale(var(--s,1));}
-.plate--left  .plate-img{left:0;transform:translateY(-50%) scale(var(--s,1));}
-.plate--center .plate-img{left:50%;transform:translate(-50%,-50%) scale(var(--s,1));}
+  will-change:transform;filter:contrast(1.05) saturate(1.05);}
+.plate--right .plate-img{right:0;}
+.plate--left  .plate-img{left:0;}
+.plate--center .plate-img{left:50%;}
 .plate--in{opacity:1;}
 .plate--out{opacity:0;filter:blur(14px);}
 /* fade to ink at the top-left so the DOM copy never sits on top of loud pixels */
@@ -39,10 +39,11 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
 }
 
 /* Stacked background planes (far/mid/near) behind the chapter's scene plate —
-   each drifts at its own speed as sceneOffset changes, giving the Kage-style
+   each GSAP ScrollTrigger-scrubs its own `travel` distance as the chapter
+   scrolls by, far layers moving less than near ones, giving the Kage-style
    parallax depth. Full-bleed cover, no anchor logic (these are atmosphere,
    not a composed subject). */
-.bg-layer{position:absolute;inset:-160px 0;transition:opacity .9s var(--ease-out);will-change:transform;}
+.bg-layer{position:absolute;inset:-220px 0;transition:opacity .9s var(--ease-out);will-change:transform;}
 .bg-layer img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;}
 .bg-layer:first-child img{mix-blend-mode:normal;}
 
