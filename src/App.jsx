@@ -32,11 +32,17 @@ const PLATES = [
     anchor: 'right',
     scale: 1.0,
     zoomTo: 1.05,
-    parallaxX: -18,
+    foreground: true,
+    parallaxX: 70,
+    rotate: 4,
+    glow: true,
+    aspectRatio: '1672 / 941',
     layers: [
-      { src: '/bg/stack-far.webp', travel: 60, parallaxX: 20, opacity: 0.5, scale: 1.0, blur: 3 },
-      { src: '/bg/stack-mid.webp', travel: 140, parallaxX: 50, opacity: 0.75, scale: 1.04 },
-      { src: '/bg/stack-near.webp', travel: 260, parallaxX: 90, opacity: 0.9, scale: 1.12 }
+      // Background layers are static under the cursor by default (no parallaxX) —
+      // only the plate responds to mouse position now, same as Boot.
+      { src: '/bg/stack-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/stack-mid.webp', travel: 140, opacity: 0.75, scale: 1.04 },
+      { src: '/bg/stack-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
     ]
   }, // Stack
   null, // Runtime — pending
