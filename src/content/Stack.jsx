@@ -1,15 +1,15 @@
 import SplitHeading from '../components/SplitHeading.jsx';
-import { useInView } from '../hooks/useInView.js';
+import { useScrollReveal } from '../hooks/useScrollReveal.js';
+import ForegroundPlate from '../components/ForegroundPlate.jsx';
 
-export default function Stack({ sectionRef }) {
-  const { ref: viewRef, inView } = useInView();
-  const setRefs = (el) => {
-    sectionRef.current = el;
-    viewRef.current = el;
-  };
+export default function Stack({ sectionRef, active, foregroundHost }) {
+  useScrollReveal(sectionRef);
 
   return (
-    <section id="stack" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
+    <section id="stack" ref={sectionRef} className="chapter">
+      <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
+        <img className="fg-cutout" src="/foreground/fg-stack-plate.webp" alt="" aria-hidden="true" />
+      </ForegroundPlate>
       <div className="content-grid panel">
         <div>
           <div className="eyebrow"><div className="dot" />Chapter 02 — Stack</div>

@@ -1,15 +1,11 @@
 import SplitHeading from '../components/SplitHeading.jsx';
-import { useInView } from '../hooks/useInView.js';
+import { useScrollReveal } from '../hooks/useScrollReveal.js';
 
 export default function Runtime({ sectionRef }) {
-  const { ref: viewRef, inView } = useInView();
-  const setRefs = (el) => {
-    sectionRef.current = el;
-    viewRef.current = el;
-  };
+  useScrollReveal(sectionRef);
 
   return (
-    <section id="runtime" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
+    <section id="runtime" ref={sectionRef} className="chapter">
       <div className="panel">
         <div className="eyebrow"><div className="dot" />Chapter 03 — Runtime</div>
         <SplitHeading text="Runtime" as="h1" className="title" />

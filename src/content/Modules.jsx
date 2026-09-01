@@ -1,5 +1,5 @@
 import SplitHeading from '../components/SplitHeading.jsx';
-import { useInView } from '../hooks/useInView.js';
+import { useScrollReveal } from '../hooks/useScrollReveal.js';
 import ForegroundPlate from '../components/ForegroundPlate.jsx';
 
 const PROJECTS = [
@@ -34,14 +34,10 @@ const PROJECTS = [
 ];
 
 export default function Modules({ sectionRef, active, foregroundHost }) {
-  const { ref: viewRef, inView } = useInView();
-  const setRefs = (el) => {
-    sectionRef.current = el;
-    viewRef.current = el;
-  };
+  useScrollReveal(sectionRef);
 
   return (
-    <section id="modules" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
+    <section id="modules" ref={sectionRef} className="chapter">
       <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
         <img className="fg-cutout" src="/foreground/fg-chrome-a.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>

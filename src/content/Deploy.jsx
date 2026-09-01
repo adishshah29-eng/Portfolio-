@@ -1,15 +1,11 @@
 import SplitHeading from '../components/SplitHeading.jsx';
-import { useInView } from '../hooks/useInView.js';
+import { useScrollReveal } from '../hooks/useScrollReveal.js';
 
 export default function Deploy({ sectionRef }) {
-  const { ref: viewRef, inView } = useInView();
-  const setRefs = (el) => {
-    sectionRef.current = el;
-    viewRef.current = el;
-  };
+  useScrollReveal(sectionRef);
 
   return (
-    <section id="deploy" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
+    <section id="deploy" ref={sectionRef} className="chapter">
       <div className="eyebrow"><div className="dot" />Chapter 05 — Deploy</div>
       <SplitHeading text="Deploy" as="h1" className="fin" />
       <p className="manifesto reveal">

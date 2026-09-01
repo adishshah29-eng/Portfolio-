@@ -1,5 +1,5 @@
 import SplitHeading from '../components/SplitHeading.jsx';
-import { useInView } from '../hooks/useInView.js';
+import { useScrollReveal } from '../hooks/useScrollReveal.js';
 
 // The regenerated shard cutout (public/foreground/fg-boot-shard.webp) reads
 // as a fragment breaking off the plate — but the plate itself is now a
@@ -9,14 +9,10 @@ import { useInView } from '../hooks/useInView.js';
 // the asset's still available if a later chapter has a quieter backdrop for it.
 
 export default function Boot({ sectionRef }) {
-  const { ref: viewRef, inView } = useInView();
-  const setRefs = (el) => {
-    sectionRef.current = el;
-    viewRef.current = el;
-  };
+  useScrollReveal(sectionRef);
 
   return (
-    <section id="boot" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
+    <section id="boot" ref={sectionRef} className="chapter">
       <div className="hero">
         <div className="eyebrow"><div className="dot" />Chapter 01 — Boot</div>
         <SplitHeading text="Adish Shah" as="h1" className="name" />
