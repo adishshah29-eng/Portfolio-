@@ -32,21 +32,34 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
 .plate--right .plate-img{right:-24px;}
 .plate--left  .plate-img{left:-24px;}
 .plate--center .plate-img{left:50%;}
-/* fade to ink at the top-left so the DOM copy never sits on top of loud pixels */
+/* fade to ink at the top-left so the DOM copy never sits on top of loud pixels
+   — only for plates sitting BEHIND the copy. A `.plate--fg` plate (portaled
+   above <main>, see .plate-foreground below) is meant to overlap the text,
+   so it skips this gradient entirely. */
 .plate::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;
   background:linear-gradient(105deg,var(--ink) 0%,rgba(5,7,10,.85) 32%,rgba(5,7,10,.35) 55%,transparent 78%);}
+.plate--fg::after{content:none;}
 @media (max-width:720px){
   .plate .plate-img{height:auto;width:180%;left:50%!important;top:auto;bottom:0;transform:translateX(-50%)!important;}
   .plate::after{background:linear-gradient(180deg,var(--ink) 0%,rgba(5,7,10,.85) 30%,rgba(5,7,10,.45) 60%,transparent 90%);}
 }
 
+/* A plate whose config sets `foreground: true` portals its .plate-img here
+   instead of rendering it inline with the bg layers — a fixed layer with a
+   z-index ABOVE <main> (z-index:5), so the chrome plate visually sits in
+   front of the DOM copy rather than behind it. Background layers for that
+   same chapter still render in the normal .plate-backdrop (z-index:0),
+   unaffected. */
+.plate-foreground{position:fixed;inset:0;z-index:6;pointer-events:none;overflow:hidden;}
+
 /* Stacked background planes (far/mid/near) behind the chapter's scene plate —
    each GSAP ScrollTrigger-scrubs its own `travel` distance vertically as the
-   chapter scrolls, and pans horizontally with the cursor (`parallaxX`), far
-   layers moving less than near ones either way — Kage-style parallax depth
-   plus a mouse-driven diorama tilt. Full-bleed cover, no anchor logic (these
-   are atmosphere, not a composed subject). The -150px horizontal inset is
-   overscan room for the cursor pan so it never reveals an edge. */
+   chapter scrolls. Mouse-driven horizontal pan (`parallaxX`) is opt-in per
+   layer — by default these stay put under the cursor so the plate reads as
+   the one thing actually responding to it. Full-bleed cover, no anchor
+   logic (these are atmosphere, not a composed subject). The -150px
+   horizontal inset is overscan room for any layer that does opt into pan,
+   so it never reveals an edge. */
 .bg-layer{position:absolute;inset:-220px -150px;will-change:transform;}
 .bg-layer img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;}
 .bg-layer:first-child img{mix-blend-mode:normal;}
@@ -100,7 +113,8 @@ main{position:relative;z-index:5;}
 
 /* boot */
 .hero{max-width:900px;}
-h1.name{font-weight:600;text-transform:uppercase;font-size:clamp(52px,10vw,128px);line-height:.88;letter-spacing:-.02em;}
+h1.name{font-family:'Unbounded',system-ui,sans-serif;font-weight:800;text-transform:uppercase;
+  font-size:clamp(42px,8.4vw,108px);line-height:.94;letter-spacing:-.03em;}
 .tagline{margin-top:26px;font-size:clamp(13px,1.3vw,16px);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--bone-dim);}
 .sub{margin-top:16px;max-width:520px;font-size:13.5px;line-height:1.75;color:var(--bone-dim);}
 .stats{display:flex;gap:clamp(28px,4vw,56px);margin-top:56px;flex-wrap:wrap;}

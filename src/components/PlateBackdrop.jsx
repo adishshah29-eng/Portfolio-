@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -18,17 +19,19 @@ gsap.registerPlugin(ScrollTrigger);
 // section element: background layers drift a real, visible distance
 // (per-layer `travel`, far layers less than near ones) and the plate
 // slowly zooms (`scale` → `zoomTo`) across the full time that chapter is
-// on screen — not the old fixed-multiplier drift, which moved a few px
-// over an entire chapter and read as static.
+// on screen.
 //
-// On top of that, mouse position drives a second, independent motion: each
-// layer pans horizontally with the cursor (`parallaxX`, far layers less
-// than near ones — same depth logic as the scroll travel, just driven by
-// the pointer instead), while the plate itself drifts a little the
-// opposite way, so the environment reacts around a subject that feels
-// anchored — a diorama-tilt effect. This rides on the `x` transform
-// component, which GSAP composes independently of the scroll scrub's `y`/
-// `scale`, so the two never fight over the same value.
+// Mouse position drives a second, independent motion, but only on the
+// elements that opt into it via `parallaxX` — background layers are static
+// under the cursor by default, and the plate is the one thing that moves,
+// with a slight rotation added so it reads as a physical object turning
+// toward the viewer rather than a flat layer sliding.
+//
+// A plate can also set `foreground: true` to render its image (alpha
+// channel required) in a layer ABOVE the DOM copy instead of behind it —
+// portaled into `foregroundHost`, a fixed container with a higher z-index
+// than <main>. That's how the plate can visually "emerge in front of" the
+// hero text instead of sitting as a backdrop behind it.
 
 const CROSSFADE_MS = 900;
 const prefersReducedMotion = () =>
@@ -36,7 +39,7 @@ const prefersReducedMotion = () =>
 const hasFinePointer = () =>
   typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches;
 
-export default function PlateBackdrop({ plates, activeIndex, chapterIds }) {
+export default function PlateBackdrop({ plates, activeIndex, chapterIds, foregroundHost }) {
   const [current, setCurrent] = useState(activeIndex);
   const [prev, setPrev] = useState(null);
 
@@ -54,7 +57,14 @@ export default function PlateBackdrop({ plates, activeIndex, chapterIds }) {
   return (
     <div className="plate-backdrop" aria-hidden="true">
       {prevPlate && (
-        <PlateImage key={`prev-${prev}`} plate={prevPlate} state="out" chapterId={chapterIds[prev]} isActive={false} />
+        <PlateImage
+          key={`prev-${prev}`}
+          plate={prevPlate}
+          state="out"
+          chapterId={chapterIds[prev]}
+          isActive={false}
+          foregroundHost={foregroundHost}
+        />
       )}
       {currentPlate && (
         <PlateImage
@@ -63,18 +73,22 @@ export default function PlateBackdrop({ plates, activeIndex, chapterIds }) {
           state="in"
           chapterId={chapterIds[current]}
           isActive
+          foregroundHost={foregroundHost}
         />
       )}
     </div>
   );
 }
 
-function PlateImage({ plate, state, chapterId, isActive }) {
-  const { src, anchor = 'right', scale = 1, zoomTo, parallaxX: plateParallaxX = 0, layers } = plate;
+function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
+  const { src, anchor = 'right', scale = 1, zoomTo, parallaxX: plateParallaxX = 0, rotate: plateRotate = 0, foreground, layers } = plate;
   const rootRef = useRef(null);
+  const fgRootRef = useRef(null);
   const plateImgRef = useRef(null);
   const layerEls = useRef([]);
   layerEls.current = [];
+
+  const usesForeground = foreground && foregroundHost;
 
   useLayoutEffect(() => {
     let removePointer = () => {};
@@ -89,25 +103,24 @@ function PlateImage({ plate, state, chapterId, isActive }) {
         if (el) gsap.set(el, { scale: layer.scale ?? 1 });
       });
 
-      // Crossfade: GSAP-driven rather than the old CSS-transition class
-      // swap. Each plate is a fresh component mount with a new `key` on
-      // chapter change, so it's present in the DOM at its target opacity
-      // from the very first render — a CSS transition has no prior
-      // painted state to animate from and just pops. gsap.fromTo sets an
-      // explicit `from` value itself, so it always actually animates.
-      if (rootRef.current) {
+      // Crossfade: GSAP-driven rather than a CSS-transition class swap.
+      // Each plate is a fresh component mount with a new `key` on chapter
+      // change, so it's present in the DOM at its target opacity from the
+      // very first render — a CSS transition has no prior painted state to
+      // animate from and just pops. gsap.fromTo sets an explicit `from`
+      // value itself, so it always actually animates. Applied to both the
+      // inline root (bg layers) and the portaled foreground root (plate),
+      // kept in lockstep on the same duration/ease.
+      const fadeTargets = [rootRef.current, usesForeground ? fgRootRef.current : null].filter(Boolean);
+      fadeTargets.forEach((el) => {
         if (prefersReducedMotion()) {
-          gsap.set(rootRef.current, { opacity: state === 'out' ? 0 : 1 });
+          gsap.set(el, { opacity: state === 'out' ? 0 : 1 });
         } else if (state === 'out') {
-          gsap.fromTo(
-            rootRef.current,
-            { opacity: 1, filter: 'blur(0px)' },
-            { opacity: 0, filter: 'blur(14px)', duration: CROSSFADE_MS / 1000, ease: 'power2.out' }
-          );
+          gsap.fromTo(el, { opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(14px)', duration: CROSSFADE_MS / 1000, ease: 'power2.out' });
         } else {
-          gsap.fromTo(rootRef.current, { opacity: 0 }, { opacity: 1, duration: CROSSFADE_MS / 1000, ease: 'power2.out' });
+          gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: CROSSFADE_MS / 1000, ease: 'power2.out' });
         }
-      }
+      });
 
       if (!isActive || !chapterId || prefersReducedMotion()) return;
 
@@ -125,8 +138,12 @@ function PlateImage({ plate, state, chapterId, isActive }) {
       if (!hasFinePointer()) return;
 
       const panners = [];
+      let setRotate = null;
       if (plateImgRef.current && plateParallaxX) {
         panners.push({ strength: plateParallaxX, setX: gsap.quickTo(plateImgRef.current, 'x', { duration: 0.7, ease: 'power3.out' }) });
+      }
+      if (plateImgRef.current && plateRotate) {
+        setRotate = gsap.quickTo(plateImgRef.current, 'rotation', { duration: 0.8, ease: 'power3.out' });
       }
       layers?.forEach((layer, i) => {
         const el = layerEls.current[i];
@@ -134,11 +151,12 @@ function PlateImage({ plate, state, chapterId, isActive }) {
           panners.push({ strength: layer.parallaxX, setX: gsap.quickTo(el, 'x', { duration: 0.7, ease: 'power3.out' }) });
         }
       });
-      if (!panners.length) return;
+      if (!panners.length && !setRotate) return;
 
       const onMove = (e) => {
         const nx = (e.clientX / window.innerWidth - 0.5) * 2; // -1..1
         panners.forEach(({ strength, setX }) => setX(nx * strength));
+        if (setRotate) setRotate(nx * plateRotate);
       };
       window.addEventListener('mousemove', onMove, { passive: true });
       removePointer = () => window.removeEventListener('mousemove', onMove);
@@ -148,12 +166,21 @@ function PlateImage({ plate, state, chapterId, isActive }) {
       removePointer();
       ctx.revert();
     };
+    // usesForeground starts false (the foreground host ref isn't attached to
+    // a real DOM node until after the first commit) and flips to true at
+    // most once, right after — re-running the whole setup on that flip is
+    // what makes it target the portaled plate-img instead of the inline one
+    // that briefly existed before the host was ready. Everything else here
+    // (anchor/scale/layers/etc.) is a static plate config, not meant to
+    // re-trigger this.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [usesForeground]);
 
-  const cls = `plate plate--${anchor} plate--${state}`;
+  const anchorCls = `plate--${anchor} plate--${state}`;
+  const plateImgEl = src && <img className="plate-img" ref={plateImgRef} src={src} alt="" />;
+
   return (
-    <div className={cls} ref={rootRef}>
+    <div className={`plate ${anchorCls}`} ref={rootRef}>
       {layers &&
         layers.map((layer, i) => {
           const filter = `saturate(1.08)${layer.blur ? ` blur(${layer.blur}px)` : ''}`;
@@ -168,7 +195,14 @@ function PlateImage({ plate, state, chapterId, isActive }) {
             </div>
           );
         })}
-      {src && <img className="plate-img" ref={plateImgRef} src={src} alt="" />}
+      {!usesForeground && plateImgEl}
+      {usesForeground &&
+        createPortal(
+          <div className={`plate plate--fg ${anchorCls}`} ref={fgRootRef}>
+            {plateImgEl}
+          </div>,
+          foregroundHost
+        )}
     </div>
   );
 }

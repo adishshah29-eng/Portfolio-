@@ -14,11 +14,15 @@ const PLATES = [
     anchor: 'right',
     scale: 1.04,
     zoomTo: 1.1,
-    parallaxX: -18,
+    foreground: true, // renders above the DOM copy (alpha-cut plate) instead of behind it
+    parallaxX: 70, // the plate is the one thing that moves with the cursor now
+    rotate: 4, // subtle tilt in degrees, so it reads as an object turning, not just sliding
     layers: [
-      { src: '/bg/boot-far.webp', travel: 60, parallaxX: 20, opacity: 0.5, scale: 1.0, blur: 3 },
-      { src: '/bg/boot-mid.webp', travel: 140, parallaxX: 50, opacity: 0.8, scale: 1.04 },
-      { src: '/bg/boot-near.webp', travel: 260, parallaxX: 90, opacity: 0.95, scale: 1.12 }
+      // Background layers are static under the cursor by default (no parallaxX) —
+      // only the plate responds to mouse position now.
+      { src: '/bg/boot-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/boot-mid.webp', travel: 140, opacity: 0.8, scale: 1.04 },
+      { src: '/bg/boot-near.webp', travel: 260, opacity: 0.95, scale: 1.12 }
     ]
   }, // Boot
   {
@@ -54,14 +58,16 @@ export default function App() {
 
   const { activeIndex } = useScrollAnchors(sectionRefs, CHAPTER_IDS);
   const { hostRef, host } = useForegroundHost();
+  const { hostRef: plateFgHostRef, host: plateFgHost } = useForegroundHost();
   useLenis();
 
   return (
     <div>
-      <PlateBackdrop plates={PLATES} activeIndex={activeIndex} chapterIds={CHAPTER_IDS} />
+      <PlateBackdrop plates={PLATES} activeIndex={activeIndex} chapterIds={CHAPTER_IDS} foregroundHost={plateFgHost} />
       <div id="grain" aria-hidden="true" />
       <div id="vignette" aria-hidden="true" />
       <ForegroundHost hostRef={hostRef} />
+      <div className="plate-foreground" ref={plateFgHostRef} aria-hidden="true" />
 
       <a className="sr-only" href="#boot">Skip to content</a>
       <Nav chapterIds={CHAPTER_IDS} activeIndex={activeIndex} />
