@@ -100,12 +100,16 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
 
 main{position:relative;z-index:5;}
 .chapter{position:relative;padding:calc(var(--nav-h) + 64px) var(--pad) 64px;display:flex;flex-direction:column;justify-content:center;}
-/* Boot's pinned intro: the section is tall (one viewport plus the pin
-   scroll distance — keep this 1500px in sync with BOOT_PIN_DISTANCE in
-   src/content/bootIntro.js), but it's NOT the flex-centering .chapter box
-   itself — that would center .hero-pin somewhere in the middle of a
-   ~1600vh-equivalent box instead of at the top. .hero-pin is the actual
-   sticky viewport-height content; #boot is just its tall scroll runway. */
+/* Boot's pinned intro: the section is tall (one viewport, plus the text-
+   reveal scrub distance, plus a trailing "breathing space" gap once the
+   hero is fully revealed and before Stack begins — keep the 1500px here in
+   sync with BOOT_PIN_DISTANCE + BOOT_BREATHING_SPACE in
+   src/content/bootIntro.js, 1000 + 500), but it's NOT the flex-centering
+   .chapter box itself — that would center .hero-pin somewhere in the
+   middle of a ~1600vh-equivalent box instead of at the top. .hero-pin is
+   the actual sticky viewport-height content; #boot is just its tall scroll
+   runway, and stays pinned for the whole runway (scrub finishes, then it
+   just holds) since that's what CSS position:sticky naturally does. */
 #boot{display:block;min-height:calc(100vh + 1500px);padding:0;}
 .hero-pin{position:sticky;top:0;min-height:100vh;
   display:flex;flex-direction:column;justify-content:center;
@@ -134,7 +138,8 @@ main{position:relative;z-index:5;}
 /* boot */
 .hero{max-width:900px;}
 h1.name{font-family:'Syne',system-ui,sans-serif;font-weight:800;text-transform:uppercase;
-  font-size:clamp(40px,8vw,104px);line-height:.96;letter-spacing:-.015em;}
+  font-size:clamp(26px,7.6vw,104px);line-height:.96;letter-spacing:-.015em;
+  white-space:nowrap;}
 .tagline{margin-top:26px;font-size:clamp(13px,1.3vw,16px);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--bone-dim);}
 .sub{margin-top:16px;max-width:520px;font-size:13.5px;line-height:1.75;color:var(--bone-dim);}
 .stats{display:flex;gap:clamp(28px,4vw,56px);margin-top:56px;flex-wrap:wrap;}

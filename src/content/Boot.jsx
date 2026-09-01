@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitHeading from '../components/SplitHeading.jsx';
-import { BOOT_PIN_DISTANCE, BOOT_ZOOM_DISTANCE } from './bootIntro.js';
+import { BOOT_PIN_DISTANCE } from './bootIntro.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,12 +21,11 @@ const prefersReducedMotion = () =>
 // .hero-pin in place at the top of the viewport for BOOT_PIN_DISTANCE px of
 // scroll (safer to reason about than GSAP's own pin option, and immune to
 // the usual GSAP-pin-vs-smooth-scroll-library friction since it's native
-// layout, not JS-managed). While it's pinned: the first BOOT_ZOOM_DISTANCE
-// px is the plate's own approach zoom (App.jsx's zoomRange) with no text
-// yet, then the eyebrow, the name's letters, and the rest of the copy
-// reveal in that order across the remaining distance — all scrubbed
-// against the exact same #boot scroll range, so it never drifts out of
-// sync with the plate.
+// layout, not JS-managed). While it's pinned, the eyebrow, the name's
+// letters, and the rest of the copy reveal in that order, scrubbed against
+// that same #boot scroll range. #boot's height reserves extra scroll beyond
+// BOOT_PIN_DISTANCE (see BOOT_BREATHING_SPACE in bootIntro.js) so the fully
+// revealed hero holds still for a beat before Stack begins.
 export default function Boot({ sectionRef }) {
   const pinRef = useRef(null);
 
@@ -52,23 +51,13 @@ export default function Boot({ sectionRef }) {
 
       gsap.set(targets, { opacity: 0, y: 16 });
 
-      // A scrubbed timeline's total duration (in whatever units) is mapped
-      // proportionally across the FULL scrollTrigger range — there's no
-      // inherent 1:1 unit-to-pixel relationship. So the "hold" phase has to
-      // be sized as a fraction of total timeline duration matching
-      // BOOT_ZOOM_DISTANCE / BOOT_PIN_DISTANCE, not an arbitrary duration
-      // value, or it drifts out of sync with the plate's own zoom (which IS
-      // pixel-exact, via its own scrollRange). Computed here instead of
-      // hand-tuned so it stays correct if either constant changes.
       const TOTAL = 100;
-      const holdUnits = (BOOT_ZOOM_DISTANCE / BOOT_PIN_DISTANCE) * TOTAL;
-      const textUnits = TOTAL - holdUnits;
-      const eyebrowStart = holdUnits;
-      const eyebrowDur = textUnits * 0.1;
+      const eyebrowStart = 0;
+      const eyebrowDur = TOTAL * 0.12;
       const lettersStart = eyebrowStart + eyebrowDur * 0.5;
-      const lettersDur = textUnits * 0.55;
+      const lettersDur = TOTAL * 0.55;
       const restStart = lettersStart + lettersDur * 0.7;
-      const restDur = textUnits * 0.4;
+      const restDur = TOTAL * 0.4;
 
       const tl = gsap.timeline({
         scrollTrigger: { trigger: root, start: 'top top', end: `+=${BOOT_PIN_DISTANCE}`, scrub: 0.5 }

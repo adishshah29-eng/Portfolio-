@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { CHAPTER_IDS } from './content/chapterIds.js';
-import { BOOT_PIN_DISTANCE, BOOT_ZOOM_DISTANCE } from './content/bootIntro.js';
+import { BOOT_PIN_DISTANCE } from './content/bootIntro.js';
 import { useScrollAnchors } from './hooks/useScrollAnchors.js';
 import { useLenis } from './hooks/useLenis.js';
 import ForegroundHost, { useForegroundHost } from './components/ForegroundHost.jsx';
@@ -13,14 +13,9 @@ const PLATES = [
   {
     src: '/plates/plate-01-boot.webp',
     anchor: 'right',
-    scale: 0.42, // starts small — the "coming toward the viewer" approach
-    zoomTo: 1.04, // settles here once the intro's approach phase ends
-    // Scope the approach zoom to just the first slice of the pinned intro
-    // (see Boot.jsx) rather than the whole chapter — it should finish
-    // *before* the text starts revealing, not keep drifting through it.
-    zoomRange: { start: 'top top', end: `+=${BOOT_ZOOM_DISTANCE}` },
-    // Background layers keep drifting across the FULL pinned distance, so
-    // there's still visible motion throughout the text-reveal phase too.
+    scale: 1.0, // static resting size — no approach zoom, the plate just sits there
+    // Background layers keep drifting across the pinned text-reveal distance,
+    // so there's still visible motion throughout the intro.
     layerRange: { start: 'top top', end: `+=${BOOT_PIN_DISTANCE}` },
     foreground: true, // renders above the DOM copy (alpha-cut plate) instead of behind it
     parallaxX: 70, // the plate is the one thing that moves with the cursor now
@@ -41,7 +36,6 @@ const PLATES = [
     foreground: true,
     parallaxX: 70,
     rotate: 4,
-    glow: true,
     aspectRatio: '1672 / 941',
     layers: [
       // Background layers are static under the cursor by default (no parallaxX) —
