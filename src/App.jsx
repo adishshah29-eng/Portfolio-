@@ -52,7 +52,7 @@ export default function App() {
       <Nav chapterIds={CHAPTER_IDS} activeIndex={activeIndex} />
 
       <main>
-        <Boot sectionRef={bootRef} active={activeIndex === 0} foregroundHost={host} />
+        <Boot sectionRef={bootRef} />
         <Stack sectionRef={stackRef} />
         <Runtime sectionRef={runtimeRef} />
         <Modules sectionRef={modulesRef} active={activeIndex === 3} foregroundHost={host} />

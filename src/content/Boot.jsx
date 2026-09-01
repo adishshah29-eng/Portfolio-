@@ -1,8 +1,14 @@
 import SplitHeading from '../components/SplitHeading.jsx';
 import { useInView } from '../hooks/useInView.js';
-import ForegroundPlate from '../components/ForegroundPlate.jsx';
 
-export default function Boot({ sectionRef, active, foregroundHost }) {
+// The regenerated shard cutout (public/foreground/fg-boot-shard.webp) reads
+// as a fragment breaking off the plate — but the plate itself is now a
+// dense chrome-shard explosion, so a second similar shard anywhere near it
+// either clashes with or gets lost inside the plate's own cluster. Dropping
+// it from Boot rather than force a placement that fights the hero image;
+// the asset's still available if a later chapter has a quieter backdrop for it.
+
+export default function Boot({ sectionRef }) {
   const { ref: viewRef, inView } = useInView();
   const setRefs = (el) => {
     sectionRef.current = el;
@@ -11,9 +17,6 @@ export default function Boot({ sectionRef, active, foregroundHost }) {
 
   return (
     <section id="boot" ref={setRefs} className={`chapter${inView ? ' in' : ''}`}>
-      <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
-        <img className="fg-cutout" src="/foreground/fg-boot-shard.webp" alt="" aria-hidden="true" />
-      </ForegroundPlate>
       <div className="hero">
         <div className="eyebrow"><div className="dot" />Chapter 01 — Boot</div>
         <SplitHeading text="Adish Shah" as="h1" className="name" />
