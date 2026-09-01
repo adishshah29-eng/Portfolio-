@@ -17,6 +17,8 @@ const PLATES = [
     foreground: true, // renders above the DOM copy (alpha-cut plate) instead of behind it
     parallaxX: 70, // the plate is the one thing that moves with the cursor now
     rotate: 4, // subtle tilt in degrees, so it reads as an object turning, not just sliding
+    glow: true, // cursor-follow light, masked to this plate's own alpha channel
+    aspectRatio: '1915 / 821', // keeps the glow's box sized identically to the img's intrinsic size
     layers: [
       // Background layers are static under the cursor by default (no parallaxX) —
       // only the plate responds to mouse position now.

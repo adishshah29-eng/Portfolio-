@@ -27,22 +27,33 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
    transition on the same properties would re-ease GSAP's already-eased
    values and lag behind them. opacity:0 is just the pre-JS default. */
 .plate{position:absolute;inset:0;opacity:0;filter:blur(0);}
-.plate .plate-img{position:absolute;top:50%;z-index:3;transform-origin:center;height:100%;width:auto;max-width:none;
-  will-change:transform;filter:contrast(1.05) saturate(1.05);}
-.plate--right .plate-img{right:-24px;}
-.plate--left  .plate-img{left:-24px;}
-.plate--center .plate-img{left:50%;}
+.plate .plate-img,.plate .plate-glow{position:absolute;top:50%;transform-origin:center;height:100%;width:auto;max-width:none;
+  will-change:transform;}
+.plate .plate-img{z-index:3;filter:contrast(1.05) saturate(1.05);}
+.plate--right .plate-img,.plate--right .plate-glow{right:-24px;}
+.plate--left  .plate-img,.plate--left  .plate-glow{left:-24px;}
+.plate--center .plate-img,.plate--center .plate-glow{left:50%;}
+/* Cursor-follow light for plates that opt in with `glow: true` — a radial
+   highlight tracked to the pointer (--gx/--gy, set by PlateBackdrop's GSAP
+   quickTo) and masked to the plate's own image, so it only ever brightens
+   actual chrome pixels, never the transparent gaps around them. screen
+   blend keeps it additive (only ever brightens, never darkens or tints
+   flatly) so it reads as light hitting metal rather than a colored overlay. */
+.plate .plate-glow{z-index:4;pointer-events:none;
+  background:radial-gradient(circle 260px at var(--gx,50%) var(--gy,50%),rgba(255,244,224,.85),rgba(224,35,28,.28) 46%,transparent 72%);
+  mix-blend-mode:screen;mask-repeat:no-repeat;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;-webkit-mask-size:100% 100%;}
 /* fade to ink at the top-left so the DOM copy never sits on top of loud pixels
    — only for plates sitting BEHIND the copy. A `.plate--fg` plate (portaled
    above <main>, see .plate-foreground below) is meant to overlap the text,
    so it skips this gradient entirely. */
-.plate::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;
+.plate::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
   background:linear-gradient(105deg,var(--ink) 0%,rgba(5,7,10,.85) 32%,rgba(5,7,10,.35) 55%,transparent 78%);}
 .plate--fg::after{content:none;}
 @media (max-width:720px){
-  .plate .plate-img{height:auto;width:180%;left:50%!important;top:auto;bottom:0;transform:translateX(-50%)!important;}
+  .plate .plate-img,.plate .plate-glow{height:auto;width:180%;left:50%!important;top:auto;bottom:0;transform:translateX(-50%)!important;}
   .plate::after{background:linear-gradient(180deg,var(--ink) 0%,rgba(5,7,10,.85) 30%,rgba(5,7,10,.45) 60%,transparent 90%);}
 }
+@media (prefers-reduced-motion:reduce),(pointer:coarse){ .plate-glow{display:none;} }
 
 /* A plate whose config sets `foreground: true` portals its .plate-img here
    instead of rendering it inline with the bg layers — a fixed layer with a
