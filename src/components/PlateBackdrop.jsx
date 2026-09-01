@@ -41,7 +41,7 @@ gsap.registerPlugin(ScrollTrigger);
 // than <main>. That's how the plate can visually "emerge in front of" the
 // hero text instead of sitting as a backdrop behind it.
 
-const CROSSFADE_MS = 900;
+const CROSSFADE_MS = 650;
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const hasFinePointer = () =>
@@ -94,6 +94,8 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
     anchor = 'right',
     scale = 1,
     zoomTo,
+    zoomRange,
+    layerRange,
     parallaxX: plateParallaxX = 0,
     rotate: plateRotate = 0,
     glow,
@@ -123,7 +125,15 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
       // object with it.
       const objTargets = [plateImgRef.current, usesGlow ? glowRef.current : null].filter(Boolean);
       const xPercent = anchor === 'center' ? -50 : 0;
-      if (objTargets.length) gsap.set(objTargets, { yPercent: -50, xPercent, scale });
+      // When the scroll-driven zoom below won't run (reduced motion, or
+      // this plate isn't the active one), settle directly at `zoomTo`
+      // rather than the animation's starting `scale` — otherwise a plate
+      // whose intro scale is deliberately tiny (Boot's approach zoom starts
+      // at 0.42) would be stuck small forever instead of at its intended
+      // resting size.
+      const skipsZoomAnim = !isActive || !chapterId || prefersReducedMotion();
+      const restingScale = skipsZoomAnim && zoomTo ? zoomTo : scale;
+      if (objTargets.length) gsap.set(objTargets, { yPercent: -50, xPercent, scale: restingScale });
       layers?.forEach((layer, i) => {
         const el = layerEls.current[i];
         if (el) gsap.set(el, { scale: layer.scale ?? 1 });
@@ -137,28 +147,44 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
       // value itself, so it always actually animates. Applied to both the
       // inline root (bg layers) and the portaled foreground root (plate),
       // kept in lockstep on the same duration/ease.
+      //
+      // Plain opacity only — no filter:blur here. Animating CSS blur means
+      // re-rasterizing this whole fixed full-viewport layer (several
+      // layered images, one with mix-blend-mode:screen) every frame, which
+      // is exactly the kind of thing that drops frames and reads as
+      // laggy. Opacity alone is cheap (GPU-composited) and the crossfade
+      // still reads as a proper dissolve without it.
       const fadeTargets = [rootRef.current, usesForeground ? fgRootRef.current : null].filter(Boolean);
       fadeTargets.forEach((el) => {
         if (prefersReducedMotion()) {
           gsap.set(el, { opacity: state === 'out' ? 0 : 1 });
         } else if (state === 'out') {
-          gsap.fromTo(el, { opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(14px)', duration: CROSSFADE_MS / 1000, ease: 'power2.out' });
+          gsap.fromTo(el, { opacity: 1 }, { opacity: 0, duration: CROSSFADE_MS / 1000, ease: 'power1.out' });
         } else {
-          gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: CROSSFADE_MS / 1000, ease: 'power2.out' });
+          gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: CROSSFADE_MS / 1000, ease: 'power1.out' });
         }
       });
 
       if (!isActive || !chapterId || prefersReducedMotion()) return;
 
-      const scrollTrigger = { trigger: `#${chapterId}`, start: 'top bottom', end: 'bottom top', scrub: 0.6 };
+      // Default: scrub across the whole chapter (top bottom -> bottom top,
+      // i.e. from the moment it starts entering the viewport to the moment
+      // it's fully left it). A plate can override either the zoom's or the
+      // layers' range independently via `zoomRange`/`layerRange` — Boot uses
+      // this to scope its plate-approach zoom to just the first slice of its
+      // pinned intro, while its background layers keep drifting across the
+      // whole pinned distance.
+      const defaultTrigger = { trigger: `#${chapterId}`, start: 'top bottom', end: 'bottom top', scrub: 0.6 };
+      const zoomTrigger = zoomRange ? { trigger: `#${chapterId}`, scrub: 1, ...zoomRange } : defaultTrigger;
+      const layerTrigger = layerRange ? { trigger: `#${chapterId}`, scrub: 1, ...layerRange } : defaultTrigger;
 
       if (objTargets.length && zoomTo) {
-        gsap.fromTo(objTargets, { scale }, { scale: zoomTo, ease: 'none', scrollTrigger });
+        gsap.fromTo(objTargets, { scale }, { scale: zoomTo, ease: 'none', scrollTrigger: zoomTrigger });
       }
       layers?.forEach((layer, i) => {
         const el = layerEls.current[i];
         if (!el || !layer.travel) return;
-        gsap.fromTo(el, { y: -layer.travel / 2 }, { y: layer.travel / 2, ease: 'none', scrollTrigger });
+        gsap.fromTo(el, { y: -layer.travel / 2 }, { y: layer.travel / 2, ease: 'none', scrollTrigger: layerTrigger });
       });
 
       // Idle sway: a slow, continuous vertical breathe on the plate object so

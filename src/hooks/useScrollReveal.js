@@ -14,18 +14,26 @@ const prefersReducedMotion = () =>
 // project cards, Deploy's link rows.
 const REVEAL_ITEM_SELECTOR = '.stat, .row, .stn, .card, .lrow';
 
-// Scroll-scrubbed entrance for a chapter's copy — eyebrow label, split
-// heading words, then .reveal blocks, staggered in that DOM order and
-// tied directly to how far the section has scrolled into view. Replaces
-// the old IntersectionObserver + CSS-transition version, which fired a
-// fixed-duration fade the moment the section crossed a threshold and was
-// then completely detached from scroll — this instead scrubs forward
-// and backward exactly in step with the user's scroll position.
+// Scroll-scrubbed entrance for a chapter's copy — eyebrow label, then the
+// split heading (word-by-word by default, or letter-by-letter for any
+// SplitHeading using splitBy="letter"), then .reveal blocks, staggered in
+// that DOM order and tied directly to how far the section has scrolled
+// into view. Replaces the old IntersectionObserver + CSS-transition
+// version, which fired a fixed-duration fade the moment the section
+// crossed a threshold and was then completely detached from scroll — this
+// instead scrubs forward and backward exactly in step with the user's
+// scroll position.
 //
 // Within each .reveal block, individual repeating items (see
 // REVEAL_ITEM_SELECTOR) stagger in one at a time rather than the whole
 // block fading in together — so a timeline, a project grid, or a list of
 // links each reads as a sequence tied to scroll, not one flat block.
+//
+// Boot doesn't use this hook — its intro is a pinned sequence (see
+// Boot.jsx) with different-enough requirements (plate-approach hold, text
+// only starting after, everything scrubbed against a fixed pin distance
+// rather than the eyebrow's viewport position) that it has its own
+// bespoke timeline instead of a flag on this one.
 export function useScrollReveal(sectionRef) {
   useLayoutEffect(() => {
     const root = sectionRef.current;
@@ -36,7 +44,11 @@ export function useScrollReveal(sectionRef) {
         const items = block.querySelectorAll(REVEAL_ITEM_SELECTOR);
         return items.length ? [...items] : [block];
       });
-      const targets = [...root.querySelectorAll('.eyebrow'), ...root.querySelectorAll('.split-wrap .word'), ...revealTargets];
+      const targets = [
+        ...root.querySelectorAll('.eyebrow'),
+        ...root.querySelectorAll('.split-wrap .word, .split-wrap .letter'),
+        ...revealTargets
+      ];
       if (!targets.length) return;
 
       // Trigger off the first target (the eyebrow) rather than the section

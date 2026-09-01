@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { CHAPTER_IDS } from './content/chapterIds.js';
+import { BOOT_PIN_DISTANCE, BOOT_ZOOM_DISTANCE } from './content/bootIntro.js';
 import { useScrollAnchors } from './hooks/useScrollAnchors.js';
 import { useLenis } from './hooks/useLenis.js';
 import ForegroundHost, { useForegroundHost } from './components/ForegroundHost.jsx';
@@ -12,19 +13,24 @@ const PLATES = [
   {
     src: '/plates/plate-01-boot.webp',
     anchor: 'right',
-    scale: 1.04,
-    zoomTo: 1.1,
+    scale: 0.42, // starts small — the "coming toward the viewer" approach
+    zoomTo: 1.04, // settles here once the intro's approach phase ends
+    // Scope the approach zoom to just the first slice of the pinned intro
+    // (see Boot.jsx) rather than the whole chapter — it should finish
+    // *before* the text starts revealing, not keep drifting through it.
+    zoomRange: { start: 'top top', end: `+=${BOOT_ZOOM_DISTANCE}` },
+    // Background layers keep drifting across the FULL pinned distance, so
+    // there's still visible motion throughout the text-reveal phase too.
+    layerRange: { start: 'top top', end: `+=${BOOT_PIN_DISTANCE}` },
     foreground: true, // renders above the DOM copy (alpha-cut plate) instead of behind it
     parallaxX: 70, // the plate is the one thing that moves with the cursor now
     rotate: 4, // subtle tilt in degrees, so it reads as an object turning, not just sliding
-    glow: true, // cursor-follow light, masked to this plate's own alpha channel
-    aspectRatio: '1915 / 821', // keeps the glow's box sized identically to the img's intrinsic size
     layers: [
       // Background layers are static under the cursor by default (no parallaxX) —
       // only the plate responds to mouse position now.
-      { src: '/bg/boot-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
-      { src: '/bg/boot-mid.webp', travel: 140, opacity: 0.8, scale: 1.04 },
-      { src: '/bg/boot-near.webp', travel: 260, opacity: 0.95, scale: 1.12 }
+      { src: '/bg/boot-far.webp', travel: 90, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/boot-mid.webp', travel: 200, opacity: 0.8, scale: 1.04 },
+      { src: '/bg/boot-near.webp', travel: 360, opacity: 0.95, scale: 1.12 }
     ]
   }, // Boot
   {
