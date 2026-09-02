@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { measureAnchors, exactProgressFromScroll } from '../lib/scrollProgress.js';
+import { measureAnchors, activeIndexFromScroll } from '../lib/scrollProgress.js';
 
 export function useScrollAnchors(sectionRefs, chapterIds) {
   const anchorsRef = useRef([]);
@@ -16,8 +16,7 @@ export function useScrollAnchors(sectionRefs, chapterIds) {
 
     function onScroll() {
       const scrollY = window.scrollY || window.pageYOffset;
-      const exact = exactProgressFromScroll(anchorsRef.current, scrollY);
-      const idx = Math.max(0, Math.min(chapterIds.length - 1, Math.round(exact)));
+      const idx = activeIndexFromScroll(anchorsRef.current, scrollY);
       setActiveIndex((prev) => (prev === idx ? prev : idx));
     }
 
