@@ -42,7 +42,22 @@ export function usePinnedReveal(sectionRef, pinRef, pinDistance) {
         return;
       }
 
-      gsap.set(targets, { opacity: 0, y: 16, scale: 0.96, filter: 'blur(6px)' });
+      // .card elements also carry a hover-driven lift (see
+      // useCardHoverPhysics in Modules.jsx) that writes `y`/`scale` via a
+      // proxy object + gsap.set rather than driving the card's own
+      // transform through quickTo directly, specifically so a second GSAP
+      // instance — this timeline — can also animate the card's transform
+      // (the pop-in below) without the two fighting over the DOM element's
+      // per-element transform cache (see useSceneTilt.js for the same
+      // rotateX/rotateZ conflict class this sidesteps).
+      //
+      // transformPerspective is set once, per-element (not an ancestor
+      // property — see useSceneTilt.js for why that distinction matters
+      // near sticky/fixed elements), so the `z` component below actually
+      // has depth to move through: each item starts pulled back behind the
+      // screen plane and pushes forward to z:0 as it settles, reading as
+      // "emerging toward the viewer" rather than just fading up in 2D.
+      gsap.set(targets, { transformPerspective: 700, opacity: 0, y: 16, z: -160, scale: 0.96, filter: 'blur(6px)' });
 
       const TOTAL = 100;
       const eyebrowStart = 0;
@@ -56,10 +71,12 @@ export function usePinnedReveal(sectionRef, pinRef, pinDistance) {
         scrollTrigger: { trigger: root, start: 'top top', end: `+=${pinDistance}`, scrub: 0.5 }
       });
 
-      const settle = { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' };
+      const settle = { opacity: 1, y: 0, z: 0, scale: 1, filter: 'blur(0px)' };
       tl.to(eyebrow, { ...settle, duration: eyebrowDur }, eyebrowStart)
-        .to(letters, { ...settle, stagger: lettersDur / letters.length, duration: lettersDur }, lettersStart)
-        .to(rest, { ...settle, stagger: restDur / (rest.length || 1), duration: restDur }, restStart);
+        .to(letters, { ...settle, stagger: lettersDur / letters.length, duration: lettersDur }, lettersStart);
+      if (rest.length) {
+        tl.to(rest, { ...settle, stagger: restDur / rest.length, duration: restDur }, restStart);
+      }
     }, root);
 
     return () => ctx.revert();

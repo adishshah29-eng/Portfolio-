@@ -52,7 +52,11 @@ export default function Boot({ sectionRef }) {
         return;
       }
 
-      gsap.set(targets, { opacity: 0, y: 16 });
+      // Same transformPerspective + z pop treatment as usePinnedReveal.js
+      // (see that file for why perspective is baked per-element rather than
+      // set on a shared ancestor) — kept in sync by hand since Boot owns its
+      // own timeline for the stat count-up below.
+      gsap.set(targets, { transformPerspective: 700, opacity: 0, y: 16, z: -160, scale: 0.96, filter: 'blur(6px)' });
 
       const TOTAL = 100;
       const eyebrowStart = 0;
@@ -66,9 +70,10 @@ export default function Boot({ sectionRef }) {
         scrollTrigger: { trigger: root, start: 'top top', end: `+=${BOOT_PIN_DISTANCE}`, scrub: 0.5 }
       });
 
-      tl.to(eyebrow, { opacity: 1, y: 0, duration: eyebrowDur }, eyebrowStart)
-        .to(letters, { opacity: 1, y: 0, stagger: lettersDur / letters.length, duration: lettersDur }, lettersStart)
-        .to(rest, { opacity: 1, y: 0, stagger: restDur / (rest.length || 1), duration: restDur }, restStart);
+      const settle = { opacity: 1, y: 0, z: 0, scale: 1, filter: 'blur(0px)' };
+      tl.to(eyebrow, { ...settle, duration: eyebrowDur }, eyebrowStart)
+        .to(letters, { ...settle, stagger: lettersDur / letters.length, duration: lettersDur }, lettersStart)
+        .to(rest, { ...settle, stagger: restDur / (rest.length || 1), duration: restDur }, restStart);
 
       // Count the stat numbers up in step with their own fade-in instead of
       // just popping in as static text - draws a beat of attention to the

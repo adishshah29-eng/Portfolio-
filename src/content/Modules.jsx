@@ -45,6 +45,15 @@ const PROJECTS = [
 // spring overshoot (matching PlateBackdrop's own mouse-driven feel)
 // instead of a flat CSS transition. Skipped for touch/reduced-motion,
 // same guards used everywhere else GSAP drives pointer-following motion.
+//
+// quickTo eases a plain proxy object here, not `y`/`scale` on the card
+// element directly — two independent quickTo instances targeting
+// different transform sub-properties on the SAME element fight over
+// GSAP's per-element transform cache (silently, as a console warning:
+// "scale not eligible for reset. Try splitting into individual
+// properties"), the same conflict class documented in useSceneTilt.js
+// for rotateX/rotateZ. Writing both values together in one gsap.set
+// inside a shared onUpdate sidesteps it.
 function useCardHoverPhysics(gridRef) {
   useLayoutEffect(() => {
     const grid = gridRef.current;
@@ -52,8 +61,10 @@ function useCardHoverPhysics(gridRef) {
 
     const cards = [...grid.querySelectorAll('.card')];
     const cleanups = cards.map((card) => {
-      const setY = gsap.quickTo(card, 'y', { duration: 0.5, ease: 'back.out(1.6)' });
-      const setScale = gsap.quickTo(card, 'scale', { duration: 0.5, ease: 'back.out(1.6)' });
+      const proxy = { y: 0, scale: 1 };
+      const apply = () => gsap.set(card, { y: proxy.y, scale: proxy.scale });
+      const setY = gsap.quickTo(proxy, 'y', { duration: 0.5, ease: 'back.out(1.6)', onUpdate: apply });
+      const setScale = gsap.quickTo(proxy, 'scale', { duration: 0.5, ease: 'back.out(1.6)', onUpdate: apply });
       const onEnter = () => { setY(-6); setScale(1.015); };
       const onLeave = () => { setY(0); setScale(1); };
       card.addEventListener('pointerenter', onEnter);
