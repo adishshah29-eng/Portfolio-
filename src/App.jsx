@@ -4,7 +4,6 @@ import { BOOT_PIN_DISTANCE } from './content/bootIntro.js';
 import { STACK_PIN_DISTANCE, RUNTIME_PIN_DISTANCE, MODULES_PIN_DISTANCE, DEPLOY_PIN_DISTANCE } from './content/pinIntro.js';
 import { useScrollAnchors } from './hooks/useScrollAnchors.js';
 import { useLenis } from './hooks/useLenis.js';
-import { useSceneTilt } from './hooks/useSceneTilt.js';
 import ForegroundHost, { useForegroundHost } from './components/ForegroundHost.jsx';
 import PlateBackdrop from './components/PlateBackdrop.jsx';
 
@@ -157,8 +156,7 @@ export default function App() {
   const { activeIndex } = useScrollAnchors(sectionRefs, CHAPTER_IDS);
   const { hostRef, host } = useForegroundHost();
   const { hostRef: plateFgHostRef, host: plateFgHost } = useForegroundHost();
-  const lenisRef = useLenis();
-  useSceneTilt(plateFgHostRef, lenisRef);
+  useLenis();
 
   return (
     <div>

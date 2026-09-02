@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,15 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 // in the app needs to know it's there — and drives ScrollTrigger off the
 // same rAF tick so scrubbed animations stay in sync instead of lagging a
 // frame behind the smoothed scroll position.
-//
-// Returns a ref to the live Lenis instance (not just booleans/numbers) so
-// other hooks — useSceneTilt reads `.velocity` every tick — can react to
-// scroll speed/direction without each one standing up its own scroll
-// listener. The ref is null until mount and after unmount/reduced-motion,
-// so callers must guard for that.
 export function useLenis() {
-  const lenisRef = useRef(null);
-
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -28,7 +20,6 @@ export function useLenis() {
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true
     });
-    lenisRef.current = lenis;
 
     lenis.on('scroll', ScrollTrigger.update);
 
@@ -41,9 +32,6 @@ export function useLenis() {
     return () => {
       gsap.ticker.remove(raf);
       lenis.destroy();
-      lenisRef.current = null;
     };
   }, []);
-
-  return lenisRef;
 }

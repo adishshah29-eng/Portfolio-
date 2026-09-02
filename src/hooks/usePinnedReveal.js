@@ -48,15 +48,18 @@ export function usePinnedReveal(sectionRef, pinRef, pinDistance) {
       // transform through quickTo directly, specifically so a second GSAP
       // instance — this timeline — can also animate the card's transform
       // (the pop-in below) without the two fighting over the DOM element's
-      // per-element transform cache (see useSceneTilt.js for the same
-      // rotateX/rotateZ conflict class this sidesteps).
+      // per-element transform cache (two GSAP instances each owning a
+      // different transform sub-property on the same element silently
+      // drop each other's writes — surfaces as a console warning like
+      // "scale not eligible for reset").
       //
-      // transformPerspective is set once, per-element (not an ancestor
-      // property — see useSceneTilt.js for why that distinction matters
-      // near sticky/fixed elements), so the `z` component below actually
-      // has depth to move through: each item starts pulled back behind the
-      // screen plane and pushes forward to z:0 as it settles, reading as
-      // "emerging toward the viewer" rather than just fading up in 2D.
+      // transformPerspective is set once, per-element (not a shared
+      // ancestor — that would make the ancestor a new containing block for
+      // position:fixed/sticky descendants, breaking the nav/pin machinery),
+      // so the `z` component below actually has depth to move through:
+      // each item starts pulled back behind the screen plane and pushes
+      // forward to z:0 as it settles, reading as "emerging toward the
+      // viewer" rather than just fading up in 2D.
       gsap.set(targets, { transformPerspective: 700, opacity: 0, y: 16, z: -160, scale: 0.96, filter: 'blur(6px)' });
 
       const TOTAL = 100;

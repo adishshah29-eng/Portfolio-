@@ -50,17 +50,16 @@ const PROJECTS = [
 // (rotateX/rotateY) toward the pointer, on top of the lift/scale - the
 // card reads as a physical tile you're tipping, not just a flat image
 // sliding up. transformPerspective is baked once onto the card itself
-// (not a shared ancestor - see useSceneTilt.js for why that distinction
-// matters near sticky/fixed elements), so the rotation actually has
-// depth to turn through instead of skewing flat.
+// (not a shared ancestor, which would make it a new containing block for
+// position:fixed/sticky descendants), so the rotation actually has depth
+// to turn through instead of skewing flat.
 //
 // quickTo eases a plain proxy object here, not the card's own transform
 // sub-properties directly — independent quickTo instances each owning a
 // different transform sub-property on the SAME element fight over
 // GSAP's per-element transform cache (silently, as a console warning:
 // "scale not eligible for reset. Try splitting into individual
-// properties"), the same conflict class documented in useSceneTilt.js
-// for rotateX/rotateZ. Writing every value together in one gsap.set
+// properties"). Writing every value together in one gsap.set
 // inside a shared onUpdate sidesteps it.
 const CARD_TILT_MAX = 7;
 

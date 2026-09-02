@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import SplitHeading from '../components/SplitHeading.jsx';
 import { usePinnedReveal } from '../hooks/usePinnedReveal.js';
 import ForegroundPlate from '../components/ForegroundPlate.jsx';
+import EmberParticles from '../components/EmberParticles.jsx';
 import { DEPLOY_PIN_DISTANCE } from './pinIntro.js';
 
 export default function Deploy({ sectionRef, active, foregroundHost }) {
@@ -13,6 +14,7 @@ export default function Deploy({ sectionRef, active, foregroundHost }) {
       <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
         <img className="fg-cutout" src="/foreground/fg-deploy-ember.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>
+      <EmberParticles className="ember-layer" />
       <div className="pin" ref={pinRef}>
         <div className="eyebrow"><div className="dot" />Chapter 05 · Deploy</div>
         <SplitHeading text="Deploy" as="h1" className="fin" splitBy="letter" />
