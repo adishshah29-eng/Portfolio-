@@ -42,7 +42,7 @@ export default function Modules({ sectionRef, active, foregroundHost }) {
         <img className="fg-cutout" src="/foreground/fg-modules-block.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>
       <div>
-        <div className="eyebrow"><div className="dot" />Chapter 04 — Modules</div>
+        <div className="eyebrow"><div className="dot" />Chapter 04 · Modules</div>
         <SplitHeading text="Modules" as="h1" className="title" />
         <div className="grid reveal d2">
           {PROJECTS.map((p) => (

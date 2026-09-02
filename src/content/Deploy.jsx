@@ -10,10 +10,10 @@ export default function Deploy({ sectionRef, active, foregroundHost }) {
       <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
         <img className="fg-cutout" src="/foreground/fg-deploy-ember.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>
-      <div className="eyebrow"><div className="dot" />Chapter 05 — Deploy</div>
+      <div className="eyebrow"><div className="dot" />Chapter 05 · Deploy</div>
       <SplitHeading text="Deploy" as="h1" className="fin" />
       <p className="manifesto reveal">
-        Still compiling, always shipping. Open to full-stack and AI engineering roles — let's build something real.
+        Still compiling, always shipping. Open to full-stack and AI engineering roles. Let's build something real.
       </p>
       <div className="links reveal d2">
         <div className="lrow"><div className="k">Email</div><a className="v" href="mailto:adishshah29@gmail.com">adishshah29@gmail.com</a></div>

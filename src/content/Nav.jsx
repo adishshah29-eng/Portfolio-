@@ -5,7 +5,7 @@ export default function Nav({ chapterIds, activeIndex }) {
     <nav className="nav" aria-label="Chapters">
       <div className="brand">
         <b>THE BUILD</b>
-        <i>ADISH SHAH — PORTFOLIO</i>
+        <i>ADISH SHAH, PORTFOLIO</i>
       </div>
       <ul className="nav-links">
         {chapterIds.map((id, i) => (

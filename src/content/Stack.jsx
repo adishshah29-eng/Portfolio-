@@ -12,17 +12,16 @@ export default function Stack({ sectionRef, active, foregroundHost }) {
       </ForegroundPlate>
       <div className="content-grid panel">
         <div>
-          <div className="eyebrow"><div className="dot" />Chapter 02 — Stack</div>
+          <div className="eyebrow"><div className="dot" />Chapter 02 · Stack</div>
           <SplitHeading text="Stack" as="h1" className="title" />
           <p className="bio reveal">
-            AI &amp; ML undergraduate at DJSCE with hands-on full-stack development experience across Python, Java,
-            and JavaScript — building data-driven applications with a proactive, results-driven approach to
-            real-world engineering problems.
+            Full-stack development experience across Python, Java, and JavaScript, applied to data-driven
+            applications with a proactive, results-driven approach to real-world engineering problems.
           </p>
           <div className="edu reveal d2">
             <div className="role">B.Tech, Artificial Intelligence &amp; Machine Learning</div>
             <div className="org">Dwarkadas J. Sanghvi College of Engineering, Mumbai</div>
-            <div className="yr">2024 — Present</div>
+            <div className="yr">2024-Present</div>
           </div>
         </div>
         <div className="legend reveal d2">
