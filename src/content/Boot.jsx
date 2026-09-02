@@ -2,7 +2,6 @@ import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitHeading from '../components/SplitHeading.jsx';
-import { BOOT_PIN_DISTANCE } from './bootIntro.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,19 +15,19 @@ const prefersReducedMotion = () =>
 // it from Boot rather than force a placement that fights the hero image;
 // the asset's still available if a later chapter has a quieter backdrop for it.
 
-// Boot runs the same pinned-intro pattern every other chapter now uses
-// (see usePinnedReveal.js for the generalized version) but keeps its own
-// copy of the timeline here rather than calling that hook directly, since
-// it also drives a stat count-up tied to the exact same schedule — CSS
-// position:sticky holds .pin in place at the top of the viewport for
-// BOOT_PIN_DISTANCE px of scroll (safer to reason about than GSAP's own
-// pin option, and immune to the usual GSAP-pin-vs-smooth-scroll-library
-// friction since it's native layout, not JS-managed). While it's pinned,
-// the eyebrow, the name's letters, and the rest of the copy reveal in that
-// order, scrubbed against that same #boot scroll range. #boot's height
-// reserves extra scroll beyond BOOT_PIN_DISTANCE (see BOOT_BREATHING_SPACE
-// in bootIntro.js) so the fully revealed hero holds still for a beat
-// before Stack begins.
+// Boot is the very first thing anyone sees, with zero scroll yet
+// performed — unlike every other chapter (which the visitor only reaches
+// by already scrolling), so its reveal can't be gated behind scroll
+// progress the way usePinnedReveal.js's generalized version is. Doing
+// that left the whole hero (name, tagline, stats) invisible for as long
+// as the visitor sat still, reading as a half-loaded/blank page rather
+// than a hero. Instead this timeline just plays once on mount, like a
+// normal hero intro — CSS position:sticky still holds .pin at the top of
+// the viewport for BOOT_PIN_DISTANCE px of scroll (safer to reason about
+// than GSAP's own pin option, and immune to the usual
+// GSAP-pin-vs-smooth-scroll-library friction since it's native layout,
+// not JS-managed), which now reads as a held beat after the intro has
+// already finished rather than the thing revealing it.
 export default function Boot({ sectionRef }) {
   const pinRef = useRef(null);
 
@@ -58,7 +57,10 @@ export default function Boot({ sectionRef }) {
       // own timeline for the stat count-up below.
       gsap.set(targets, { transformPerspective: 700, opacity: 0, y: 16, z: -160, scale: 0.96, filter: 'blur(6px)' });
 
-      const TOTAL = 100;
+      // Same relative schedule this used as a 0-100 scrub range, just
+      // reinterpreted as real seconds now that it plays on a timer instead
+      // of against scroll position.
+      const TOTAL = 1.6;
       const eyebrowStart = 0;
       const eyebrowDur = TOTAL * 0.12;
       const lettersStart = eyebrowStart + eyebrowDur * 0.5;
@@ -66,9 +68,7 @@ export default function Boot({ sectionRef }) {
       const restStart = lettersStart + lettersDur * 0.7;
       const restDur = TOTAL * 0.4;
 
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: root, start: 'top top', end: `+=${BOOT_PIN_DISTANCE}`, scrub: 0.5 }
-      });
+      const tl = gsap.timeline({ delay: 0.15 });
 
       const settle = { opacity: 1, y: 0, z: 0, scale: 1, filter: 'blur(0px)' };
       tl.to(eyebrow, { ...settle, duration: eyebrowDur }, eyebrowStart)
