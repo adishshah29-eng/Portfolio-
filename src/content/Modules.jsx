@@ -39,7 +39,7 @@ export default function Modules({ sectionRef, active, foregroundHost }) {
   return (
     <section id="modules" ref={sectionRef} className="chapter">
       <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
-        <img className="fg-cutout" src="/foreground/fg-chrome-a.webp" alt="" aria-hidden="true" />
+        <img className="fg-cutout" src="/foreground/fg-modules-block.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>
       <div>
         <div className="eyebrow"><div className="dot" />Chapter 04 — Modules</div>

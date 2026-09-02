@@ -66,7 +66,28 @@ const PLATES = [
       { src: '/bg/runtime-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
     ]
   }, // Runtime
-  null, // Modules — pending
+  {
+    src: '/plates/plate-04-modules.webp',
+    anchor: 'right',
+    scale: 1.0,
+    zoomTo: 1.05,
+    // Not foreground: Modules' own 2-column project grid is wider than
+    // Boot/Stack/Runtime's copy columns and already has its own foreground
+    // accent (the ForegroundPlate fg-cutout below), so the chapter plate
+    // sits behind the DOM copy instead — the opaque .card backgrounds and
+    // the built-in top-left ink fade (see .plate::after) keep the grid text
+    // legible while the plate still reads clearly around/above it.
+    parallaxX: 70,
+    rotate: 4,
+    aspectRatio: '1915 / 821',
+    layers: [
+      // Background layers are static under the cursor by default (no parallaxX) —
+      // only the plate responds to mouse position now, same as Boot/Stack/Runtime.
+      { src: '/bg/modules-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/modules-mid.webp', travel: 140, opacity: 0.75, scale: 1.04 },
+      { src: '/bg/modules-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
+    ]
+  }, // Modules
   null  // Deploy — pending
 ];
 import Nav from './content/Nav.jsx';
