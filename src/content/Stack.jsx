@@ -2,6 +2,14 @@ import SplitHeading from '../components/SplitHeading.jsx';
 import { useScrollReveal } from '../hooks/useScrollReveal.js';
 import ForegroundPlate from '../components/ForegroundPlate.jsx';
 
+const SKILLS = [
+  { cat: 'Languages', items: ['Python', 'Java', 'JavaScript'] },
+  { cat: 'Frontend', items: ['React.js', 'Next.js', 'GSAP', 'Framer Motion', 'HTML/CSS'] },
+  { cat: 'Backend & Data', items: ['Node.js', 'Firebase', 'Supabase'] },
+  { cat: 'AI & Automation', items: ['n8n', 'Vapi.ai', 'Twilio', 'Cursor AI', 'Claude', 'Antigravity IDE'] },
+  { cat: 'Tools', items: ['Git', 'Vercel'] }
+];
+
 export default function Stack({ sectionRef, active, foregroundHost }) {
   useScrollReveal(sectionRef);
 
@@ -25,11 +33,14 @@ export default function Stack({ sectionRef, active, foregroundHost }) {
           </div>
         </div>
         <div className="legend reveal d2">
-          <div className="row"><div className="cat"><div className="node-dot" />Languages</div><div className="items">Python, Java, JavaScript</div></div>
-          <div className="row"><div className="cat"><div className="node-dot" />Frontend</div><div className="items">React.js, Next.js, GSAP, Framer Motion, HTML/CSS</div></div>
-          <div className="row"><div className="cat"><div className="node-dot" />Backend &amp; Data</div><div className="items">Node.js, Firebase, Supabase</div></div>
-          <div className="row"><div className="cat"><div className="node-dot" />AI &amp; Automation</div><div className="items">n8n, Vapi.ai, Twilio, Cursor AI, Claude, Antigravity IDE</div></div>
-          <div className="row"><div className="cat"><div className="node-dot" />Tools</div><div className="items">Git, Vercel</div></div>
+          {SKILLS.map(({ cat, items }) => (
+            <div className="row" key={cat}>
+              <div className="cat"><div className="node-dot" />{cat}</div>
+              <div className="chip-list">
+                {items.map((item) => <span className="chip" key={item}>{item}</span>)}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

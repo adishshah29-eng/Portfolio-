@@ -57,10 +57,17 @@ export function useScrollReveal(sectionRef) {
       // own top edge can sit hundreds of px above where the text actually
       // appears. The eyebrow is always the first visible thing, so anchoring
       // to it tracks the real on-screen entrance regardless of section height.
-      gsap.set(targets, { opacity: 0, y: 16 });
+      // Scale + blur ride along with the existing opacity/y - each item
+      // settles into full focus rather than just sliding into place, which
+      // reads as "coming into view" instead of "appearing." Kept subtle
+      // (0.96 and 6px) since this scrubs both directions with scroll and a
+      // heavier version would swim distractingly on a slow scroll back up.
+      gsap.set(targets, { opacity: 0, y: 16, scale: 0.96, filter: 'blur(6px)' });
       gsap.to(targets, {
         opacity: 1,
         y: 0,
+        scale: 1,
+        filter: 'blur(0px)',
         stagger: 0.045,
         ease: 'none',
         scrollTrigger: { trigger: targets[0], start: 'top 92%', end: 'top 42%', scrub: 0.4 }

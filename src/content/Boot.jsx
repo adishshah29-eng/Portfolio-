@@ -66,6 +66,34 @@ export default function Boot({ sectionRef }) {
       tl.to(eyebrow, { opacity: 1, y: 0, duration: eyebrowDur }, eyebrowStart)
         .to(letters, { opacity: 1, y: 0, stagger: lettersDur / letters.length, duration: lettersDur }, lettersStart)
         .to(rest, { opacity: 1, y: 0, stagger: restDur / (rest.length || 1), duration: restDur }, restStart);
+
+      // Count the stat numbers up in step with their own fade-in instead of
+      // just popping in as static text - draws a beat of attention to the
+      // actual credentials rather than motion for its own sake. Piggybacks
+      // on the exact same stagger schedule as the `rest` tween above (each
+      // item starts restDur/rest.length apart, runs for the full restDur)
+      // so the count finishes exactly as that item's fade/scale settle.
+      const statEls = rest.filter((el) => el.classList?.contains('stat'));
+      if (statEls.length) {
+        const step = restDur / rest.length;
+        const firstStatIndex = rest.length - statEls.length;
+        statEls.forEach((statEl, i) => {
+          const numEl = statEl.querySelector('b');
+          if (!numEl) return;
+          const raw = numEl.textContent;
+          const target = parseInt(raw, 10);
+          const pad = /^0/.test(raw) ? raw.length : 0;
+          const counter = { v: 0 };
+          tl.to(counter, {
+            v: target,
+            duration: restDur,
+            snap: { v: 1 },
+            onUpdate: () => {
+              numEl.textContent = pad ? String(Math.round(counter.v)).padStart(pad, '0') : String(Math.round(counter.v));
+            }
+          }, restStart + (firstStatIndex + i) * step);
+        });
+      }
     }, root);
 
     return () => ctx.revert();

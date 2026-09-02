@@ -98,6 +98,18 @@ h1,h2,h3{font-weight:400;margin:0;letter-spacing:-.005em;}
 .nav-link[aria-current="page"]::after{content:'';position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--vermilion);}
 @media (max-width:720px){ .nav-links{gap:12px;} .nav-link{font-size:9px;padding-bottom:18px;} .brand i{display:none;} }
 
+/* Read progress across the whole 5-chapter scroll, not just the current
+   section — a persistent sense of "how far into the story" that a plain
+   active-nav-link can't give on a page this long. Driven by ScrollTrigger's
+   own scrub against document height (see useScrollProgress.js), so it's a
+   live readout tied 1:1 to scroll position, the same way a native scrollbar
+   thumb is — not an independent animation, so it's not gated behind
+   prefers-reduced-motion. transform:scaleX, not width, to stay off the
+   layout-triggering property list. */
+.nav-progress{position:absolute;left:0;bottom:-1px;width:100%;height:1px;
+  transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--vermilion),var(--gold));}
+
 main{position:relative;z-index:5;}
 .chapter{position:relative;padding:calc(var(--nav-h) + 64px) var(--pad) 64px;display:flex;flex-direction:column;justify-content:center;}
 /* Boot's pinned intro: the section is tall (one viewport, plus the text-
@@ -159,12 +171,24 @@ h1.title{text-transform:uppercase;font-weight:500;font-size:clamp(44px,7vw,92px)
 .edu .role{font-size:12px;letter-spacing:.1em;color:var(--bone);text-transform:uppercase;}
 .edu .org{margin-top:6px;font-size:12.5px;color:var(--bone-dim);}
 .edu .yr{margin-top:6px;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
-.legend .row{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:baseline;padding:16px 0;border-top:1px solid var(--line);}
+.legend .row{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:baseline;padding:16px 12px;
+  margin:0 -12px;border-top:1px solid var(--line);border-radius:4px;
+  transition:background-color .3s var(--ease-out);}
 .legend .row:last-child{border-bottom:1px solid var(--line);}
-@media (max-width:560px){ .legend .row{grid-template-columns:1fr;gap:8px;} }
+.legend .row:hover{background:rgba(223,231,224,.03);}
+@media (max-width:560px){ .legend .row{grid-template-columns:1fr;gap:10px;} }
 .cat{display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
 .node-dot{width:5px;height:5px;border-radius:50%;background:var(--vermilion);box-shadow:0 0 8px var(--vermilion);flex:none;}
-.items{font-size:13.5px;color:var(--bone);line-height:1.7;}
+/* Skill/stack items read as a flat comma sentence at a glance; chips let the
+   eye pick out individual names instead of parsing a run-on list. Pill
+   radius here is a deliberate, documented exception to the page's sharp-
+   corner default — reserved for small tag-like accents (chips, the eyebrow/
+   node dots), never for structural surfaces like cards or panels. */
+.chip-list{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{font-size:12px;line-height:1;padding:7px 13px;border-radius:999px;
+  border:1px solid var(--line);color:var(--bone-dim);background:rgba(223,231,224,.03);
+  transition:border-color .3s var(--ease-out),color .3s var(--ease-out);}
+.chip:hover{border-color:var(--vermilion);color:var(--bone);}
 
 /* runtime */
 .timeline{position:relative;max-width:900px;padding-left:52px;}
@@ -180,21 +204,34 @@ h1.title{text-transform:uppercase;font-weight:500;font-size:clamp(44px,7vw,92px)
 /* modules */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);max-width:1100px;}
 @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
-.card{background:rgba(7,9,12,.82);padding:clamp(22px,2.6vw,32px);display:flex;flex-direction:column;}
+/* Lift + border-brighten on hover, driven by GSAP quickTo for a slight
+   spring overshoot (see Modules.jsx) rather than a flat CSS transition -
+   the cards are the one genuinely interactive surface in this chapter
+   (each links out to a live project), so they're the one place a bit of
+   tactile weight earns its keep. */
+.card{position:relative;background:rgba(7,9,12,.88);padding:clamp(22px,2.6vw,32px);display:flex;flex-direction:column;
+  will-change:transform;transition:background-color .35s var(--ease-out);}
+.card::after{content:'';position:absolute;inset:0;border:1px solid var(--line);pointer-events:none;transition:border-color .35s var(--ease-out);}
+.card:hover{background:rgba(10,13,17,.92);}
+.card:hover::after{border-color:var(--vermilion);}
 .card .top{display:flex;align-items:center;gap:10px;}
 .card .title2{font-weight:500;font-size:20px;text-transform:uppercase;letter-spacing:.01em;}
 .card .desc{margin-top:12px;font-size:12.5px;line-height:1.7;color:var(--bone-dim);flex:1;}
-.card .tags{margin-top:14px;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;}
-.card .link{margin-top:10px;font-size:11.5px;color:var(--ember);text-decoration:none;}
+.card .tags{margin-top:16px;}
+.card .tags .chip{font-size:10.5px;padding:5px 11px;}
+.card .link{margin-top:14px;font-size:11.5px;color:var(--ember);text-decoration:none;}
 .card .link:hover{color:var(--gold);}
 
 /* deploy */
 h1.fin{text-transform:uppercase;font-weight:500;font-size:clamp(48px,9vw,120px);line-height:.9;letter-spacing:-.02em;}
 .manifesto{margin-top:22px;max-width:560px;font-size:15px;line-height:1.8;color:var(--bone-dim);}
 .links{margin-top:44px;width:100%;max-width:560px;border-top:1px solid var(--line);}
-.lrow{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 4px;border-bottom:1px solid var(--line);}
+.lrow{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 12px;
+  margin:0 -12px;border-bottom:1px solid var(--line);border-radius:4px;
+  transition:background-color .3s var(--ease-out);}
+.lrow:hover{background:rgba(223,231,224,.03);}
 .lrow .k{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
-.lrow .v{font-size:15px;color:var(--bone);text-decoration:none;}
+.lrow .v{font-size:15px;color:var(--bone);text-decoration:none;transition:color .3s var(--ease-out);}
 .lrow .v:hover{color:var(--ember);}
 footer{position:relative;z-index:5;padding:32px var(--pad) 40px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 footer h4{margin:0;font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);}

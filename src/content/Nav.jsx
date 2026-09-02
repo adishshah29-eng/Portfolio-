@@ -1,6 +1,10 @@
+import { useScrollProgress } from '../hooks/useScrollProgress.js';
+
 const LABELS = { boot: 'Boot', stack: 'Stack', runtime: 'Runtime', modules: 'Modules', deploy: 'Deploy' };
 
 export default function Nav({ chapterIds, activeIndex }) {
+  const progressRef = useScrollProgress();
+
   return (
     <nav className="nav" aria-label="Chapters">
       <div className="brand">
@@ -20,6 +24,7 @@ export default function Nav({ chapterIds, activeIndex }) {
           </li>
         ))}
       </ul>
+      <div className="nav-progress" ref={progressRef} aria-hidden="true" />
     </nav>
   );
 }
