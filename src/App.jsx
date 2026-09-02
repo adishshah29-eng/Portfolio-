@@ -19,11 +19,7 @@ const PLATES = [
     // so there's still visible motion throughout the intro.
     layerRange: { start: 'top top', end: `+=${BOOT_PIN_DISTANCE}` },
     foreground: true, // renders above the DOM copy (alpha-cut plate) instead of behind it
-    parallaxX: 70, // the plate is the one thing that moves with the cursor now
-    rotate: 4, // subtle tilt in degrees, so it reads as an object turning, not just sliding
     layers: [
-      // Background layers are static under the cursor by default (no parallaxX) —
-      // only the plate responds to mouse position now.
       { src: '/bg/boot-far.webp', travel: 90, opacity: 0.5, scale: 1.0, blur: 3 },
       { src: '/bg/boot-mid.webp', travel: 200, opacity: 0.8, scale: 1.04 },
       { src: '/bg/boot-near.webp', travel: 360, opacity: 0.95, scale: 1.12 }
@@ -47,12 +43,8 @@ const PLATES = [
     // so the disc stack needs to sit further back to keep them legible.
     fgOpacity: 0.4,
     foreground: true,
-    parallaxX: 70,
-    rotate: 4,
     aspectRatio: '1672 / 941',
     layers: [
-      // Background layers are static under the cursor by default (no parallaxX) —
-      // only the plate responds to mouse position now, same as Boot.
       { src: '/bg/stack-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
       { src: '/bg/stack-mid.webp', travel: 140, opacity: 0.75, scale: 1.04 },
       { src: '/bg/stack-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
@@ -70,12 +62,8 @@ const PLATES = [
     zoomRange: { start: 'top top', end: `+=${RUNTIME_PIN_DISTANCE}` },
     layerRange: { start: 'top top', end: `+=${RUNTIME_PIN_DISTANCE}` },
     foreground: true,
-    parallaxX: 70,
-    rotate: 4,
     aspectRatio: '1915 / 821',
     layers: [
-      // Background layers are static under the cursor by default (no parallaxX) —
-      // only the plate responds to mouse position now, same as Boot/Stack.
       { src: '/bg/runtime-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
       { src: '/bg/runtime-mid.webp', travel: 140, opacity: 0.75, scale: 1.04 },
       { src: '/bg/runtime-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
@@ -98,12 +86,8 @@ const PLATES = [
     zoomRange: { start: 'top top', end: `+=${MODULES_PIN_DISTANCE}` },
     layerRange: { start: 'top top', end: `+=${MODULES_PIN_DISTANCE}` },
     foreground: true,
-    parallaxX: 70,
-    rotate: 4,
     aspectRatio: '1915 / 821',
     layers: [
-      // Background layers are static under the cursor by default (no parallaxX) —
-      // only the plate responds to mouse position now, same as Boot/Stack/Runtime.
       { src: '/bg/modules-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
       { src: '/bg/modules-mid.webp', travel: 140, opacity: 0.75, scale: 1.04 },
       { src: '/bg/modules-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
@@ -125,11 +109,6 @@ const PLATES = [
     zoomRange: { start: 'top top', end: `+=${DEPLOY_PIN_DISTANCE}` },
     layerRange: { start: 'top top', end: `+=${DEPLOY_PIN_DISTANCE}` },
     foreground: true,
-    // No `rotate` — a tilting spire would read as off-balance rather than
-    // deliberate; this one just pans, staying still and monument-like to
-    // match the "ascension" close instead of the other chapters' more
-    // kinetic turn.
-    parallaxX: 40,
     aspectRatio: '1915 / 821',
     layers: [
       { src: '/bg/deploy-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },

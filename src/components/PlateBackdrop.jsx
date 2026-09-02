@@ -21,14 +21,9 @@ gsap.registerPlugin(ScrollTrigger);
 // slowly zooms (`scale` → `zoomTo`) across the full time that chapter is
 // on screen.
 //
-// Mouse position drives a second, independent motion, but only on the
-// elements that opt into it via `parallaxX` — background layers are static
-// under the cursor by default, and the plate is the one thing that moves:
-// pan on `x`, tilt on `rotation`, a slow idle sway on `y` that never stops —
-// three different transform components so GSAP composes them instead of
-// fighting over one value. The pan/tilt ease with a slight overshoot
-// (`back.out`) rather than settling flat, so the object reads as having
-// some weight being pushed around rather than just interpolating to a target.
+// The plate object itself stays positionally static — no mouse-driven pan
+// or tilt — aside from a slow idle vertical sway (`y`) that never stops,
+// so it's never fully still without ever visibly sliding side to side.
 //
 // A plate can also set `glow: true` to add a soft light that follows the
 // cursor across the chrome, masked to the plate's own alpha channel (see
@@ -101,8 +96,6 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
     zoomTo,
     zoomRange,
     layerRange,
-    parallaxX: plateParallaxX = 0,
-    rotate: plateRotate = 0,
     glow,
     aspectRatio,
     foreground,
@@ -125,9 +118,9 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
 
     const ctx = gsap.context(() => {
       // Everything that moves the plate object (centering, static scale, the
-      // scroll zoom, the mouse pan/tilt) applies identically to the image and
-      // the glow overlay, so the two stay perfectly registered — the glow's
-      // mask only lines up with the chrome if it moves exactly as one rigid
+      // scroll zoom, the idle sway) applies identically to the image and the
+      // glow overlay, so the two stay perfectly registered — the glow's mask
+      // only lines up with the chrome if it moves exactly as one rigid
       // object with it.
       const objTargets = [plateImgRef.current, usesGlow ? glowRef.current : null].filter(Boolean);
       const xPercent = anchor === 'center' ? -50 : 0;
@@ -197,9 +190,9 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
       });
 
       // Idle sway: a slow, continuous vertical breathe on the plate object so
-      // it's never fully still, independent of the cursor (rides `y`, which
-      // nothing else on this object touches — the mouse pan/tilt use `x` and
-      // `rotation`, so none of these fight over the same value).
+      // it's never fully still, independent of the cursor. Vertical only —
+      // the plate never pans or tilts horizontally, so it stays put on the
+      // page regardless of cursor position or scroll.
       if (objTargets.length) {
         breatheTween = gsap.fromTo(
           objTargets,
@@ -208,45 +201,25 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
         );
       }
 
-      if (!hasFinePointer()) return;
+      // The glow highlight is the one thing that still follows the cursor —
+      // a lighting effect, not the plate object itself moving, so it doesn't
+      // read as the picture sliding around.
+      if (!hasFinePointer() || !usesGlow || !glowRef.current) return;
 
-      const panners = [];
-      let setRotate = null;
-      let setGlowX = null;
-      let setGlowY = null;
-      if (objTargets.length && plateParallaxX) {
-        panners.push({ strength: plateParallaxX, setX: gsap.quickTo(objTargets, 'x', { duration: 0.85, ease: 'back.out(1.4)' }) });
-      }
-      if (objTargets.length && plateRotate) {
-        setRotate = gsap.quickTo(objTargets, 'rotation', { duration: 0.9, ease: 'back.out(1.4)' });
-      }
-      if (usesGlow && glowRef.current) {
-        // Establish the unit ("%") on these custom properties before
-        // quickTo starts feeding them plain numbers each frame — GSAP infers
-        // the unit from this initial set and keeps applying it, the same way
-        // it does for any other unit-bearing CSS property.
-        gsap.set(glowRef.current, { '--gx': '50%', '--gy': '50%' });
-        setGlowX = gsap.quickTo(glowRef.current, '--gx', { duration: 0.4, ease: 'power2.out' });
-        setGlowY = gsap.quickTo(glowRef.current, '--gy', { duration: 0.4, ease: 'power2.out' });
-      }
-      layers?.forEach((layer, i) => {
-        const el = layerEls.current[i];
-        if (el && layer.parallaxX) {
-          panners.push({ strength: layer.parallaxX, setX: gsap.quickTo(el, 'x', { duration: 0.7, ease: 'power3.out' }) });
-        }
-      });
-      if (!panners.length && !setRotate && !setGlowX) return;
+      // Establish the unit ("%") on these custom properties before quickTo
+      // starts feeding them plain numbers each frame — GSAP infers the unit
+      // from this initial set and keeps applying it, the same way it does
+      // for any other unit-bearing CSS property.
+      gsap.set(glowRef.current, { '--gx': '50%', '--gy': '50%' });
+      const setGlowX = gsap.quickTo(glowRef.current, '--gx', { duration: 0.4, ease: 'power2.out' });
+      const setGlowY = gsap.quickTo(glowRef.current, '--gy', { duration: 0.4, ease: 'power2.out' });
 
       const onMove = (e) => {
-        const nx = (e.clientX / window.innerWidth - 0.5) * 2; // -1..1
-        panners.forEach(({ strength, setX }) => setX(nx * strength));
-        if (setRotate) setRotate(nx * plateRotate);
-        if (setGlowX && setGlowY && plateImgRef.current) {
-          const r = plateImgRef.current.getBoundingClientRect();
-          if (r.width && r.height) {
-            setGlowX(((e.clientX - r.left) / r.width) * 100);
-            setGlowY(((e.clientY - r.top) / r.height) * 100);
-          }
+        if (!plateImgRef.current) return;
+        const r = plateImgRef.current.getBoundingClientRect();
+        if (r.width && r.height) {
+          setGlowX(((e.clientX - r.left) / r.width) * 100);
+          setGlowY(((e.clientY - r.top) / r.height) * 100);
         }
       };
       window.addEventListener('mousemove', onMove, { passive: true });
