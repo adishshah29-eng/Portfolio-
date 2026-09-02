@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import SplitHeading from '../components/SplitHeading.jsx';
-import { useScrollReveal } from '../hooks/useScrollReveal.js';
+import { usePinnedReveal } from '../hooks/usePinnedReveal.js';
 import ForegroundPlate from '../components/ForegroundPlate.jsx';
+import { MODULES_PIN_DISTANCE } from './pinIntro.js';
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -67,29 +68,32 @@ function useCardHoverPhysics(gridRef) {
 }
 
 export default function Modules({ sectionRef, active, foregroundHost }) {
-  useScrollReveal(sectionRef);
+  const pinRef = useRef(null);
+  usePinnedReveal(sectionRef, pinRef, MODULES_PIN_DISTANCE);
   const gridRef = useRef(null);
   useCardHoverPhysics(gridRef);
 
   return (
-    <section id="modules" ref={sectionRef} className="chapter">
+    <section id="modules" ref={sectionRef} className="chapter is-pinned">
       <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
         <img className="fg-cutout" src="/foreground/fg-modules-block.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>
-      <div>
-        <div className="eyebrow"><div className="dot" />Chapter 04 · Modules</div>
-        <SplitHeading text="Modules" as="h1" className="title" />
-        <div className="grid reveal d2" ref={gridRef}>
-          {PROJECTS.map((p) => (
-            <div className="card" key={p.title}>
-              <div className="top"><div className="node-dot" /><div className="title2">{p.title}</div></div>
-              <div className="desc">{p.desc}</div>
-              <div className="tags chip-list">
-                {p.tags.map((tag) => <span className="chip" key={tag}>{tag}</span>)}
+      <div className="pin" ref={pinRef}>
+        <div>
+          <div className="eyebrow"><div className="dot" />Chapter 04 · Modules</div>
+          <SplitHeading text="Modules" as="h1" className="title" splitBy="letter" />
+          <div className="grid reveal d2" ref={gridRef}>
+            {PROJECTS.map((p) => (
+              <div className="card" key={p.title}>
+                <div className="top"><div className="node-dot" /><div className="title2">{p.title}</div></div>
+                <div className="desc">{p.desc}</div>
+                <div className="tags chip-list">
+                  {p.tags.map((tag) => <span className="chip" key={tag}>{tag}</span>)}
+                </div>
+                <a className="link" href={p.href} target="_blank" rel="noopener">{p.label}</a>
               </div>
-              <a className="link" href={p.href} target="_blank" rel="noopener">{p.label}</a>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -1,6 +1,8 @@
+import { useRef } from 'react';
 import SplitHeading from '../components/SplitHeading.jsx';
-import { useScrollReveal } from '../hooks/useScrollReveal.js';
+import { usePinnedReveal } from '../hooks/usePinnedReveal.js';
 import ForegroundPlate from '../components/ForegroundPlate.jsx';
+import { STACK_PIN_DISTANCE } from './pinIntro.js';
 
 const SKILLS = [
   { cat: 'Languages', items: ['Python', 'Java', 'JavaScript'] },
@@ -11,36 +13,39 @@ const SKILLS = [
 ];
 
 export default function Stack({ sectionRef, active, foregroundHost }) {
-  useScrollReveal(sectionRef);
+  const pinRef = useRef(null);
+  usePinnedReveal(sectionRef, pinRef, STACK_PIN_DISTANCE);
 
   return (
-    <section id="stack" ref={sectionRef} className="chapter">
+    <section id="stack" ref={sectionRef} className="chapter is-pinned">
       <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
         <img className="fg-cutout" src="/foreground/fg-stack-plate.webp" alt="" aria-hidden="true" />
       </ForegroundPlate>
-      <div className="content-grid panel">
-        <div>
-          <div className="eyebrow"><div className="dot" />Chapter 02 · Stack</div>
-          <SplitHeading text="Stack" as="h1" className="title" />
-          <p className="bio reveal">
-            Full-stack development experience across Python, Java, and JavaScript, applied to data-driven
-            applications with a proactive, results-driven approach to real-world engineering problems.
-          </p>
-          <div className="edu reveal d2">
-            <div className="role">B.Tech, Artificial Intelligence &amp; Machine Learning</div>
-            <div className="org">Dwarkadas J. Sanghvi College of Engineering, Mumbai</div>
-            <div className="yr">2024-Present</div>
-          </div>
-        </div>
-        <div className="legend reveal d2">
-          {SKILLS.map(({ cat, items }) => (
-            <div className="row" key={cat}>
-              <div className="cat"><div className="node-dot" />{cat}</div>
-              <div className="chip-list">
-                {items.map((item) => <span className="chip" key={item}>{item}</span>)}
-              </div>
+      <div className="pin" ref={pinRef}>
+        <div className="content-grid panel">
+          <div>
+            <div className="eyebrow"><div className="dot" />Chapter 02 · Stack</div>
+            <SplitHeading text="Stack" as="h1" className="title" splitBy="letter" />
+            <p className="bio reveal">
+              Full-stack development experience across Python, Java, and JavaScript, applied to data-driven
+              applications with a proactive, results-driven approach to real-world engineering problems.
+            </p>
+            <div className="edu reveal d2">
+              <div className="role">B.Tech, Artificial Intelligence &amp; Machine Learning</div>
+              <div className="org">Dwarkadas J. Sanghvi College of Engineering, Mumbai</div>
+              <div className="yr">2024-Present</div>
             </div>
-          ))}
+          </div>
+          <div className="legend reveal d2">
+            {SKILLS.map(({ cat, items }) => (
+              <div className="row" key={cat}>
+                <div className="cat"><div className="node-dot" />{cat}</div>
+                <div className="chip-list">
+                  {items.map((item) => <span className="chip" key={item}>{item}</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

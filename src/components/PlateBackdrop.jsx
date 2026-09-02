@@ -39,7 +39,12 @@ gsap.registerPlugin(ScrollTrigger);
 // channel required) in a layer ABOVE the DOM copy instead of behind it —
 // portaled into `foregroundHost`, a fixed container with a higher z-index
 // than <main>. That's how the plate can visually "emerge in front of" the
-// hero text instead of sitting as a backdrop behind it.
+// hero text instead of sitting as a backdrop behind it. A shard/disc/
+// ribbon plate is porous enough (lots of transparent gaps) that this alone
+// keeps text readable; a plate that's mostly one solid, filled shape (an
+// arch, a block) can additionally set `fgOpacity` (0-1) to dial back how
+// opaque it renders specifically in foreground mode, so text underneath
+// the shape itself stays legible without needing an even smaller scale.
 
 const CROSSFADE_MS = 650;
 const prefersReducedMotion = () =>
@@ -101,6 +106,7 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
     glow,
     aspectRatio,
     foreground,
+    fgOpacity = 1,
     layers
   } = plate;
   const rootRef = useRef(null);
@@ -133,7 +139,10 @@ function PlateImage({ plate, state, chapterId, isActive, foregroundHost }) {
       // resting size.
       const skipsZoomAnim = !isActive || !chapterId || prefersReducedMotion();
       const restingScale = skipsZoomAnim && zoomTo ? zoomTo : scale;
-      if (objTargets.length) gsap.set(objTargets, { yPercent: -50, xPercent, scale: restingScale });
+      if (objTargets.length) {
+        gsap.set(objTargets, { yPercent: -50, xPercent, scale: restingScale });
+        if (usesForeground && fgOpacity < 1) gsap.set(plateImgRef.current, { opacity: fgOpacity });
+      }
       layers?.forEach((layer, i) => {
         const el = layerEls.current[i];
         if (el) gsap.set(el, { scale: layer.scale ?? 1 });

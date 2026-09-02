@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { CHAPTER_IDS } from './content/chapterIds.js';
 import { BOOT_PIN_DISTANCE } from './content/bootIntro.js';
+import { STACK_PIN_DISTANCE, RUNTIME_PIN_DISTANCE, MODULES_PIN_DISTANCE, DEPLOY_PIN_DISTANCE } from './content/pinIntro.js';
 import { useScrollAnchors } from './hooks/useScrollAnchors.js';
 import { useLenis } from './hooks/useLenis.js';
 import ForegroundHost, { useForegroundHost } from './components/ForegroundHost.jsx';
@@ -33,6 +34,18 @@ const PLATES = [
     anchor: 'right',
     scale: 1.0,
     zoomTo: 1.05,
+    // Every chapter now runs the same pinned intro Boot does (see
+    // pinIntro.js) — during the pin, the section's own top/bottom barely
+    // move relative to the viewport, so the default scroll-linked trigger
+    // (top bottom -> bottom top) would sit nearly frozen for the whole
+    // hold. Scoping to the pin's own scroll range keeps the zoom/parallax
+    // moving throughout instead.
+    zoomRange: { start: 'top top', end: `+=${STACK_PIN_DISTANCE}` },
+    layerRange: { start: 'top top', end: `+=${STACK_PIN_DISTANCE}` },
+    // The skill legend's chip pills (see Stack.jsx) wrap across more lines
+    // and cover more of the right column than the old flat comma-text did,
+    // so the disc stack needs to sit further back to keep them legible.
+    fgOpacity: 0.4,
     foreground: true,
     parallaxX: 70,
     rotate: 4,
@@ -54,6 +67,8 @@ const PLATES = [
     // the text column at full height:100%.
     scale: 0.65,
     zoomTo: 0.7,
+    zoomRange: { start: 'top top', end: `+=${RUNTIME_PIN_DISTANCE}` },
+    layerRange: { start: 'top top', end: `+=${RUNTIME_PIN_DISTANCE}` },
     foreground: true,
     parallaxX: 70,
     rotate: 4,
@@ -69,14 +84,20 @@ const PLATES = [
   {
     src: '/plates/plate-04-modules.webp',
     anchor: 'right',
-    scale: 1.0,
-    zoomTo: 1.05,
-    // Not foreground: Modules' own 2-column project grid is wider than
-    // Boot/Stack/Runtime's copy columns and already has its own foreground
-    // accent (the ForegroundPlate fg-cutout below), so the chapter plate
-    // sits behind the DOM copy instead — the opaque .card backgrounds and
-    // the built-in top-left ink fade (see .plate::after) keep the grid text
-    // legible while the plate still reads clearly around/above it.
+    // Foreground, matching Boot/Stack/Runtime — Modules' 2-column grid is
+    // wider than those chapters' copy columns though, so a full scale-1
+    // plate covered too much of it (that's why this was behind the copy
+    // before); a smaller resting size keeps the cube cluster a clear
+    // object on the right without burying the cards under it.
+    scale: 0.55,
+    zoomTo: 0.6,
+    // Dialed back further than Boot/Stack/Runtime's plates - the cluster's
+    // faces are fairly solid (less porous than a shard/ribbon), and this
+    // chapter's own copy is the widest column on the site.
+    fgOpacity: 0.5,
+    zoomRange: { start: 'top top', end: `+=${MODULES_PIN_DISTANCE}` },
+    layerRange: { start: 'top top', end: `+=${MODULES_PIN_DISTANCE}` },
+    foreground: true,
     parallaxX: 70,
     rotate: 4,
     aspectRatio: '1915 / 821',
@@ -91,16 +112,23 @@ const PLATES = [
   {
     src: '/plates/plate-05-deploy.webp',
     anchor: 'center',
-    scale: 1.0,
-    zoomTo: 1.05,
-    // Not foreground, same reasoning as Modules: Deploy's copy is centered
-    // (not left-aligned), and the spire itself is a narrow vertical column
-    // with wide empty margins either side — sitting behind the text lets it
-    // read as the copy rising out of/through the beam rather than a wall of
-    // chrome competing with it. No `rotate` — a tilting spire would read as
-    // off-balance rather than deliberate; this one just pans, staying still
-    // and monument-like to match the "ascension" close instead of the other
-    // chapters' more kinetic turn.
+    // Foreground, matching every other chapter now — the arch is one solid,
+    // fully-filled shape sitting exactly where the centered copy sits, so
+    // scale alone can't fix legibility here (shrinking it just moves a
+    // still-opaque shape closer together with the text, not out of its way).
+    // fgOpacity is what actually keeps this chapter readable: the arch
+    // renders translucent in foreground mode, so the copy shows through it
+    // instead of being covered by it.
+    scale: 0.7,
+    zoomTo: 0.76,
+    fgOpacity: 0.45,
+    zoomRange: { start: 'top top', end: `+=${DEPLOY_PIN_DISTANCE}` },
+    layerRange: { start: 'top top', end: `+=${DEPLOY_PIN_DISTANCE}` },
+    foreground: true,
+    // No `rotate` — a tilting spire would read as off-balance rather than
+    // deliberate; this one just pans, staying still and monument-like to
+    // match the "ascension" close instead of the other chapters' more
+    // kinetic turn.
     parallaxX: 40,
     aspectRatio: '1915 / 821',
     layers: [

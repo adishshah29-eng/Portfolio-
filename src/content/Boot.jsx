@@ -16,16 +16,19 @@ const prefersReducedMotion = () =>
 // it from Boot rather than force a placement that fights the hero image;
 // the asset's still available if a later chapter has a quieter backdrop for it.
 
-// Boot's intro is a pinned sequence, not the word/letter-on-entry pattern
-// the other chapters use (see useScrollReveal) — CSS position:sticky holds
-// .hero-pin in place at the top of the viewport for BOOT_PIN_DISTANCE px of
-// scroll (safer to reason about than GSAP's own pin option, and immune to
-// the usual GSAP-pin-vs-smooth-scroll-library friction since it's native
-// layout, not JS-managed). While it's pinned, the eyebrow, the name's
-// letters, and the rest of the copy reveal in that order, scrubbed against
-// that same #boot scroll range. #boot's height reserves extra scroll beyond
-// BOOT_PIN_DISTANCE (see BOOT_BREATHING_SPACE in bootIntro.js) so the fully
-// revealed hero holds still for a beat before Stack begins.
+// Boot runs the same pinned-intro pattern every other chapter now uses
+// (see usePinnedReveal.js for the generalized version) but keeps its own
+// copy of the timeline here rather than calling that hook directly, since
+// it also drives a stat count-up tied to the exact same schedule — CSS
+// position:sticky holds .pin in place at the top of the viewport for
+// BOOT_PIN_DISTANCE px of scroll (safer to reason about than GSAP's own
+// pin option, and immune to the usual GSAP-pin-vs-smooth-scroll-library
+// friction since it's native layout, not JS-managed). While it's pinned,
+// the eyebrow, the name's letters, and the rest of the copy reveal in that
+// order, scrubbed against that same #boot scroll range. #boot's height
+// reserves extra scroll beyond BOOT_PIN_DISTANCE (see BOOT_BREATHING_SPACE
+// in bootIntro.js) so the fully revealed hero holds still for a beat
+// before Stack begins.
 export default function Boot({ sectionRef }) {
   const pinRef = useRef(null);
 
@@ -101,8 +104,8 @@ export default function Boot({ sectionRef }) {
   }, []);
 
   return (
-    <section id="boot" ref={sectionRef} className="chapter">
-      <div className="hero-pin" ref={pinRef}>
+    <section id="boot" ref={sectionRef} className="chapter is-pinned">
+      <div className="pin" ref={pinRef}>
         <div className="hero">
           <div className="eyebrow"><div className="dot" />Chapter 01 · Boot</div>
           <SplitHeading text="Adish Shah" as="h1" className="name" splitBy="letter" />
