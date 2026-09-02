@@ -46,31 +46,56 @@ const PROJECTS = [
 // instead of a flat CSS transition. Skipped for touch/reduced-motion,
 // same guards used everywhere else GSAP drives pointer-following motion.
 //
-// quickTo eases a plain proxy object here, not `y`/`scale` on the card
-// element directly — two independent quickTo instances targeting
-// different transform sub-properties on the SAME element fight over
+// Also tracks cursor position within the card to tilt it in 3D
+// (rotateX/rotateY) toward the pointer, on top of the lift/scale - the
+// card reads as a physical tile you're tipping, not just a flat image
+// sliding up. transformPerspective is baked once onto the card itself
+// (not a shared ancestor - see useSceneTilt.js for why that distinction
+// matters near sticky/fixed elements), so the rotation actually has
+// depth to turn through instead of skewing flat.
+//
+// quickTo eases a plain proxy object here, not the card's own transform
+// sub-properties directly — independent quickTo instances each owning a
+// different transform sub-property on the SAME element fight over
 // GSAP's per-element transform cache (silently, as a console warning:
 // "scale not eligible for reset. Try splitting into individual
 // properties"), the same conflict class documented in useSceneTilt.js
-// for rotateX/rotateZ. Writing both values together in one gsap.set
+// for rotateX/rotateZ. Writing every value together in one gsap.set
 // inside a shared onUpdate sidesteps it.
+const CARD_TILT_MAX = 7;
+
 function useCardHoverPhysics(gridRef) {
   useLayoutEffect(() => {
     const grid = gridRef.current;
     if (!grid || prefersReducedMotion() || !hasFinePointer()) return;
 
     const cards = [...grid.querySelectorAll('.card')];
+    gsap.set(cards, { transformPerspective: 900, transformOrigin: '50% 50%' });
+
     const cleanups = cards.map((card) => {
-      const proxy = { y: 0, scale: 1 };
-      const apply = () => gsap.set(card, { y: proxy.y, scale: proxy.scale });
+      const proxy = { y: 0, scale: 1, rotX: 0, rotY: 0 };
+      const apply = () => gsap.set(card, { y: proxy.y, scale: proxy.scale, rotateX: proxy.rotX, rotateY: proxy.rotY });
       const setY = gsap.quickTo(proxy, 'y', { duration: 0.5, ease: 'back.out(1.6)', onUpdate: apply });
       const setScale = gsap.quickTo(proxy, 'scale', { duration: 0.5, ease: 'back.out(1.6)', onUpdate: apply });
+      const setRotX = gsap.quickTo(proxy, 'rotX', { duration: 0.5, ease: 'power3.out', onUpdate: apply });
+      const setRotY = gsap.quickTo(proxy, 'rotY', { duration: 0.5, ease: 'power3.out', onUpdate: apply });
+
       const onEnter = () => { setY(-6); setScale(1.015); };
-      const onLeave = () => { setY(0); setScale(1); };
+      const onMove = (e) => {
+        const rect = card.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width - 0.5;
+        const py = (e.clientY - rect.top) / rect.height - 0.5;
+        setRotY(px * CARD_TILT_MAX);
+        setRotX(-py * CARD_TILT_MAX);
+      };
+      const onLeave = () => { setY(0); setScale(1); setRotX(0); setRotY(0); };
+
       card.addEventListener('pointerenter', onEnter);
+      card.addEventListener('pointermove', onMove);
       card.addEventListener('pointerleave', onLeave);
       return () => {
         card.removeEventListener('pointerenter', onEnter);
+        card.removeEventListener('pointermove', onMove);
         card.removeEventListener('pointerleave', onLeave);
       };
     });
