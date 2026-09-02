@@ -112,8 +112,8 @@ Already shipped and working; leave as-is.
 ### bg-deploy-near.webp
 > [style bible] + Rising embers, sparks and drifting metallic dust ascending upward through frame, warm highlights, mostly negative space, horizontal 21:9, denser toward the bottom edge.
 
-### plate-05-deploy.webp (scene plate)
-> [style bible] + A slender liquid-chrome spire/beacon rising from the dark studio floor and dissolving into glowing vermilion and gold particles at its peak, strong upward rim light, composition centered with symmetric empty space either side for closing copy, cinematic wide shot, sense of ascension and release.
+### plate-05-deploy.webp (scene plate) — REVISED: portal, not spire
+> [style bible] + A tall liquid-chrome archway or gate standing alone on the dark studio floor, its inner opening dissolving into a blinding wash of vermilion and gold light so the far side is unreadable, strong rim light tracing the inner curve of the arch, molten drips and fine cracks running down the outer edge of the frame, composition centered with symmetric empty space either side for closing copy, cinematic wide shot, sense of passage and arrival rather than ascension.
 
 ### fg-deploy-ember.webp (foreground cutout)
 > [style bible] + A small cluster of glowing embers and molten sparks caught mid-rise close to camera, extreme close-up, warm rim highlights fading to dark, background pure near-black for clean isolation, vertical portrait composition, generous empty margin.
