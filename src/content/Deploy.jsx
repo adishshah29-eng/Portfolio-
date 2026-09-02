@@ -1,11 +1,15 @@
 import SplitHeading from '../components/SplitHeading.jsx';
 import { useScrollReveal } from '../hooks/useScrollReveal.js';
+import ForegroundPlate from '../components/ForegroundPlate.jsx';
 
-export default function Deploy({ sectionRef }) {
+export default function Deploy({ sectionRef, active, foregroundHost }) {
   useScrollReveal(sectionRef);
 
   return (
     <section id="deploy" ref={sectionRef} className="chapter">
+      <ForegroundPlate host={foregroundHost} active={!!active} anchor="bottom-right">
+        <img className="fg-cutout" src="/foreground/fg-deploy-ember.webp" alt="" aria-hidden="true" />
+      </ForegroundPlate>
       <div className="eyebrow"><div className="dot" />Chapter 05 — Deploy</div>
       <SplitHeading text="Deploy" as="h1" className="fin" />
       <p className="manifesto reveal">

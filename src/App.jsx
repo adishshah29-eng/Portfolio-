@@ -88,7 +88,27 @@ const PLATES = [
       { src: '/bg/modules-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
     ]
   }, // Modules
-  null  // Deploy — pending
+  {
+    src: '/plates/plate-05-deploy.webp',
+    anchor: 'center',
+    scale: 1.0,
+    zoomTo: 1.05,
+    // Not foreground, same reasoning as Modules: Deploy's copy is centered
+    // (not left-aligned), and the spire itself is a narrow vertical column
+    // with wide empty margins either side — sitting behind the text lets it
+    // read as the copy rising out of/through the beam rather than a wall of
+    // chrome competing with it. No `rotate` — a tilting spire would read as
+    // off-balance rather than deliberate; this one just pans, staying still
+    // and monument-like to match the "ascension" close instead of the other
+    // chapters' more kinetic turn.
+    parallaxX: 40,
+    aspectRatio: '1915 / 821',
+    layers: [
+      { src: '/bg/deploy-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/deploy-mid.webp', travel: 140, opacity: 0.75, scale: 1.04 },
+      { src: '/bg/deploy-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
+    ]
+  } // Deploy
 ];
 import Nav from './content/Nav.jsx';
 import Boot from './content/Boot.jsx';
@@ -126,7 +146,7 @@ export default function App() {
         <Stack sectionRef={stackRef} active={activeIndex === 1} foregroundHost={host} />
         <Runtime sectionRef={runtimeRef} />
         <Modules sectionRef={modulesRef} active={activeIndex === 3} foregroundHost={host} />
-        <Deploy sectionRef={deployRef} />
+        <Deploy sectionRef={deployRef} active={activeIndex === 4} foregroundHost={host} />
       </main>
 
       <footer>
