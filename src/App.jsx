@@ -45,7 +45,27 @@ const PLATES = [
       { src: '/bg/stack-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
     ]
   }, // Stack
-  null, // Runtime — pending
+  {
+    src: '/plates/plate-03-runtime.webp',
+    anchor: 'right',
+    // The source ribbon fills nearly its whole frame edge-to-edge (unlike
+    // Boot/Stack's source images, which have a lot of empty margin around
+    // the object) — a smaller resting scale keeps it from sprawling across
+    // the text column at full height:100%.
+    scale: 0.65,
+    zoomTo: 0.7,
+    foreground: true,
+    parallaxX: 70,
+    rotate: 4,
+    aspectRatio: '1915 / 821',
+    layers: [
+      // Background layers are static under the cursor by default (no parallaxX) —
+      // only the plate responds to mouse position now, same as Boot/Stack.
+      { src: '/bg/runtime-far.webp', travel: 60, opacity: 0.5, scale: 1.0, blur: 3 },
+      { src: '/bg/runtime-mid.webp', travel: 140, opacity: 0.75, scale: 1.04 },
+      { src: '/bg/runtime-near.webp', travel: 260, opacity: 0.9, scale: 1.12 }
+    ]
+  }, // Runtime
   null, // Modules — pending
   null  // Deploy — pending
 ];
